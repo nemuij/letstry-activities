@@ -1,0 +1,154 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  margin-bottom: 5px;
+}
+
+p {
+  margin-top: 0;
+  color: #555;
+}
+
+/* Game board */
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(4, 150px);
+  gap: 14px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+/* Card container */
+.card {
+  width: 150px;
+  height: 200px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+/* Disable interaction while flipping */
+.card.locked {
+  pointer-events: none;
+}
+
+/* Inner flip */
+.card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s ease; /* slow flip */
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Front & back faces */
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-front {
+  background: #2c3e50;
+}
+
+.card-back {
+  background: #ecf0f1;
+  transform: rotateY(180deg);
+  font-size: 40px;
+}
+
+/* Images */
+.card-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* Buttons */
+#restartBtn,
+#celebrationRestartBtn {
+  padding: 10px 18px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+#restartBtn {
+  background: #3498db;
+  margin-bottom: 10px;
+}
+
+#restartBtn:hover {
+  background: #2980b9;
+}
+
+#celebrationRestartBtn {
+  background: #2ecc71;
+  margin-top: 20px;
+}
+
+#celebrationRestartBtn:hover {
+  background: #27ae60;
+}
+
+/* Celebration overlay */
+.celebration {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Confetti */
+#confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 14px;
+  opacity: 0.8;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  from {
+    transform: translateY(-20px) rotate(0deg);
+  }
+  to {
+    transform: translateY(110vh) rotate(360deg);
+  }
+}
