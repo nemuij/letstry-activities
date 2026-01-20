@@ -10,83 +10,83 @@ const TOTAL_PAIRS = 6; // Number of pairs per game
 
 // 26 total images
 const cardsData = [
-  { id: 'a', content: 'alphabets/A1.png' },
-  { id: 'a', content: 'alphabets/A2.png' },
+  { id: 'a', content: 'images/A1.png' },
+  { id: 'a', content: 'images/A2.png' },
 
-  { id: 'b', content: 'alphabets/B1.png' },
-  { id: 'b', content: 'alphabets/B2.png' },
+  { id: 'b', content: 'images/B1.png' },
+  { id: 'b', content: 'images/B2.png' },
 
-  { id: 'c', content: 'alphabets/C1.png' },
-  { id: 'c', content: 'alphabets/C2.png' },
+  { id: 'c', content: 'images/C1.png' },
+  { id: 'c', content: 'images/C2.png' },
 
-  { id: 'd', content: 'alphabets/D1.png' },
-  { id: 'd', content: 'alphabets/D2.png' },
+  { id: 'd', content: 'images/D1.png' },
+  { id: 'd', content: 'images/D2.png' },
 
-  { id: 'e', content: 'alphabets/E1.png' },
-  { id: 'e', content: 'alphabets/E2.png' },
+  { id: 'e', content: 'images/E1.png' },
+  { id: 'e', content: 'images/E2.png' },
 
-  { id: 'f', content: 'alphabets/F1.png' },
-  { id: 'f', content: 'alphabets/F2.png' },
+  { id: 'f', content: 'images/F1.png' },
+  { id: 'f', content: 'images/F2.png' },
 
-  { id: 'g', content: 'alphabets/G1.png' },
-  { id: 'g', content: 'alphabets/G2.png' },
+  { id: 'g', content: 'images/G1.png' },
+  { id: 'g', content: 'images/G2.png' },
 
-  { id: 'h', content: 'alphabets/H1.png' },
-  { id: 'h', content: 'alphabets/H2.png' },
+  { id: 'h', content: 'images/H1.png' },
+  { id: 'h', content: 'images/H2.png' },
 
-  { id: 'i', content: 'alphabets/I1.png' },
-  { id: 'i', content: 'alphabets/I2.png' },
+  { id: 'i', content: 'images/I1.png' },
+  { id: 'i', content: 'images/I2.png' },
 
-  { id: 'j', content: 'alphabets/J1.png' },
-  { id: 'j', content: 'alphabets/J2.png' },
+  { id: 'j', content: 'images/J1.png' },
+  { id: 'j', content: 'images/J2.png' },
 
-  { id: 'k', content: 'alphabets/K1.png' },
-  { id: 'k', content: 'alphabets/K2.png' },
+  { id: 'k', content: 'images/K1.png' },
+  { id: 'k', content: 'images/K2.png' },
 
-  { id: 'l', content: 'alphabets/L1.png' },
-  { id: 'l', content: 'alphabets/L2.png' },
+  { id: 'l', content: 'images/L1.png' },
+  { id: 'l', content: 'images/L2.png' },
 
-  { id: 'm', content: 'alphabets/M1.png' },
-  { id: 'm', content: 'alphabets/M2.png' },
+  { id: 'm', content: 'images/M1.png' },
+  { id: 'm', content: 'images/M2.png' },
 
-  { id: 'n', content: 'alphabets/N1.png' },
-  { id: 'n', content: 'alphabets/N2.png' },
+  { id: 'n', content: 'images/N1.png' },
+  { id: 'n', content: 'images/N2.png' },
 
-  { id: 'o', content: 'alphabets/O1.png' },
-  { id: 'o', content: 'alphabets/O2.png' },
+  { id: 'o', content: 'images/O1.png' },
+  { id: 'o', content: 'images/O2.png' },
 
-  { id: 'p', content: 'alphabets/P1.png' },
-  { id: 'p', content: 'alphabets/P2.png' },
+  { id: 'p', content: 'images/P1.png' },
+  { id: 'p', content: 'images/P2.png' },
 
-  { id: 'q', content: 'alphabets/Q1.png' },
-  { id: 'q', content: 'alphabets/Q2.png' },
+  { id: 'q', content: 'images/Q1.png' },
+  { id: 'q', content: 'images/Q2.png' },
 
-  { id: 'r', content: 'alphabets/R1.png' },
-  { id: 'r', content: 'alphabets/R2.png' },
+  { id: 'r', content: 'images/R1.png' },
+  { id: 'r', content: 'images/R2.png' },
 
-  { id: 's', content: 'alphabets/S1.png' },
-  { id: 's', content: 'alphabets/S2.png' },
+  { id: 's', content: 'images/S1.png' },
+  { id: 's', content: 'images/S2.png' },
 
-  { id: 't', content: 'alphabets/T1.png' },
-  { id: 't', content: 'alphabets/T2.png' },
+  { id: 't', content: 'images/T1.png' },
+  { id: 't', content: 'images/T2.png' },
 
-  { id: 'u', content: 'alphabets/U1.png' },
-  { id: 'u', content: 'alphabets/U2.png' },
+  { id: 'u', content: 'images/U1.png' },
+  { id: 'u', content: 'images/U2.png' },
 
-  { id: 'v', content: 'alphabets/V1.png' },
-  { id: 'v', content: 'alphabets/V2.png' },
+  { id: 'v', content: 'images/V1.png' },
+  { id: 'v', content: 'images/V2.png' },
 
-  { id: 'w', content: 'alphabets/W1.png' },
-  { id: 'w', content: 'alphabets/W2.png' },
+  { id: 'w', content: 'images/W1.png' },
+  { id: 'w', content: 'images/W2.png' },
 
-  { id: 'x', content: 'alphabets/X1.png' },
-  { id: 'x', content: 'alphabets/X2.png' },
+  { id: 'x', content: 'images/X1.png' },
+  { id: 'x', content: 'images/X2.png' },
 
-  { id: 'y', content: 'alphabets/Y1.png' },
-  { id: 'y', content: 'alphabets/Y2.png' },
+  { id: 'y', content: 'images/Y1.png' },
+  { id: 'y', content: 'images/Y2.png' },
 
-  { id: 'z', content: 'alphabets/Z1.png' },
-  { id: 'z', content: 'alphabets/Z2.png' },
+  { id: 'z', content: 'images/Z1.png' },
+  { id: 'z', content: 'images/Z2.png' },
 ];
 
 // Initialize game
@@ -185,3 +185,4 @@ function launchConfetti() {
     origin: { y: 0.6 }
   });
 }
+
