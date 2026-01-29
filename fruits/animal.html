@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FRUIT WORD SEARCH</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>🍓 FRUIT WORD SEARCH 🍍</h1>
+
+<div class="top-bar">
+  <div id="timer">TIME: 0S</div>
+  <button id="resetBtn">RESET</button>
+</div>
+
+<div class="container">
+  <div id="grid"></div>
+
+  <div class="word-panel">
+    <h3>FIND THE FRUITS:</h3>
+    <ul id="wordList"></ul>
+  </div>
+</div>
+
+<!-- ALL CLEAR OVERLAY -->
+<div id="allClearScreen" class="overlay hidden">
+  <div class="overlay-content">
+    <h2>🎉 ALL CLEAR! 🎉</h2>
+    <p id="finalTime"></p>
+    <button onclick="startGame()">PLAY AGAIN</button>
+    <button onclick="closeOverlay()">CLOSE</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
