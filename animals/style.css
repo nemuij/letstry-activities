@@ -1,9 +1,10 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f4f6f8;
+  background: #ffffff;
   text-align: center;
   padding: 20px;
   margin: 0;
+  color: #333;
 }
 
 h1 {
@@ -15,6 +16,12 @@ p {
   color: #555;
 }
 
+#timer {
+  font-size: 18px;
+  margin: 6px 0 10px;
+  font-weight: bold;
+}
+
 /* Game board */
 .game-board {
   display: grid;
@@ -24,7 +31,7 @@ p {
   margin: 20px auto;
 }
 
-/* Card container */
+/* Card */
 .card {
   width: 150px;
   height: 200px;
@@ -32,25 +39,22 @@ p {
   cursor: pointer;
 }
 
-/* Disable interaction while flipping */
 .card.locked {
   pointer-events: none;
 }
 
-/* Inner flip */
 .card-inner {
   width: 100%;
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.8s ease; /* slow flip */
+  transition: transform 0.8s ease;
 }
 
 .card.flipped .card-inner {
   transform: rotateY(180deg);
 }
 
-/* Front & back faces */
 .card-front,
 .card-back {
   position: absolute;
@@ -70,16 +74,34 @@ p {
 .card-back {
   background: #ecf0f1;
   transform: rotateY(180deg);
-  font-size: 40px;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
-/* Images */
+/* Animal name animation */
+.sound-text {
+  animation: soundFlash 0.6s ease-in-out infinite alternate;
+  color: #3498db;
+}
+
+@keyframes soundFlash {
+  from {
+    opacity: 0.4;
+    transform: rotateY(180deg) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(180deg) scale(1.15);
+  }
+}
+
+/* Image */
 .card-back img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   padding: 8px;
-  box-sizing: border-box;
 }
 
 /* Buttons */
@@ -98,17 +120,9 @@ p {
   margin-bottom: 10px;
 }
 
-#restartBtn:hover {
-  background: #2980b9;
-}
-
 #celebrationRestartBtn {
   background: #2ecc71;
   margin-top: 20px;
-}
-
-#celebrationRestartBtn:hover {
-  background: #27ae60;
 }
 
 /* Celebration overlay */
@@ -126,6 +140,17 @@ p {
 
 .hidden {
   display: none;
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
 }
 
 /* Confetti */
