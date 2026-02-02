@@ -120,7 +120,7 @@ function moveStepByStep(steps) {
     if (moved >= steps) {
       clearInterval(timer);
       isMoving = false;
-      showOverlay(rooms[position].name === "Goal");
+      showOverlay(position === rooms.length - 1);
       return;
     }
 
@@ -178,3 +178,4 @@ function resetGame() {
 
 /* ===== INIT ===== */
 renderToken();
+
