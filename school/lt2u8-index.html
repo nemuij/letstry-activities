@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sugoroku – School Rooms</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<h1>😁 Sugoroku: I like my school 🏫</h1>
+
+<div id="game">
+  <div id="board"></div>
+
+  <div id="panel">
+    <div id="dice" class="dice">?</div>
+    <button id="rollBtn">ROLL</button>
+  </div>
+</div>
+
+<!-- TOKEN SELECT OVERLAY -->
+<div id="tokenSelect" class="overlay show">
+  <div class="overlay-box">
+    <h2>Choose your token</h2>
+    <div class="token-options">
+      <button data-token="🐢">🐢 Turtle</button>
+      <button data-token="🐭">🐭 Mouse</button>
+      <button data-token="🐰">🐰 Rabbit</button>
+      <button data-token="🐟">🐟 Fish</button>
+      <button data-token="🐦">🐦 Bird</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVERLAY -->
+<div id="overlay" class="overlay">
+  <div class="overlay-box">
+    <div id="overlayPlayer"></div>
+    <img id="overlayImage" class="overlay-image" />
+
+    <p id="overlayRoom"></p>
+    <p id="overlaySentence"></p>
+
+    <div id="goalMessage">👍 GOOD JOB! 👍</div>
+
+    <div class="overlay-buttons">
+      <button id="nextBtn">Next</button>
+      <button id="playAgainBtn">Play Again</button>
+      <button id="closeBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
