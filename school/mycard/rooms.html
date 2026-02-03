@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🏫 What Room Is This? 🎒</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Font: Andika -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Andika&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🏫 What Room Is This? 🎒</h1>
+
+<!-- TOKEN SELECTION OVERLAY -->
+<div id="tokenOverlay" class="overlay show">
+  <div class="overlayBox">
+    <h2>Choose Your Token</h2>
+    <div class="tokens">
+      <button data-token="🌵">🌵</button>
+      <button data-token="🌻">🌻</button>
+      <button data-token="🍄">🍄</button>
+      <button data-token="🍀">🍀</button>
+      <button data-token="🌰">🌰</button>
+    </div>
+    <p id="tokenMessage">Player 1, choose a token</p>
+  </div>
+</div>
+
+<!-- MAIN GAME -->
+<div id="game" class="hidden">
+  <div id="player1" class="player blue active">
+    <h2 id="p1Name"></h2>
+    <p>Cards: <span id="p1Count">0</span></p>
+    <div id="player1Cards" class="card-area"></div>
+  </div>
+
+  <div class="center">
+    <h2>Cards</h2>
+    <div id="centerCards" class="card-area"></div>
+  </div>
+
+  <div id="player2" class="player green">
+    <h2 id="p2Name"></h2>
+    <p>Cards: <span id="p2Count">0</span></p>
+    <div id="player2Cards" class="card-area"></div>
+  </div>
+</div>
+
+<!-- GRAMMAR OVERLAY -->
+<div id="overlay" class="overlay hidden">
+  <div id="overlayContent">
+    <img id="overlayCard">
+    <p id="grammarText"></p>
+    <button id="getBtn">GET</button>
+  </div>
+</div>
+
+<!-- END SCREEN -->
+<div id="endScreen" class="overlay hidden">
+  <div class="overlayBox">
+    <h2 id="winnerText"></h2>
+    <div id="trophy">🏆</div>
+    <button id="playAgainBtn">Play Again</button>
+    <button id="homeBtn">Return Home</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
