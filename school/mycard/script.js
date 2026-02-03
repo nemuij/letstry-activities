@@ -33,23 +33,23 @@ let tokenStep = 1;
 
 /* ===== CARD DATA ===== */
 const cards = [
-  { img: "rooms-image/aandc.png", name: "art room" },
-  { img: "rooms-image/classroom1.png", name: "classroom" },
-  { img: "rooms-image/cookingroom.png", name: "cooking room" },
-  { img: "rooms-image/entrance.png", name: "entrance" },
-  { img: "rooms-image/gym.png", name: "gym" },
-  { img: "rooms-image/library.png", name: "library" },
-  { img: "rooms-image/lunchroom.png", name: "lunch room" },
-  { img: "rooms-image/musicroom.png", name: "music room" },
-  { img: "rooms-image/nursesoffice.png", name: "nurse's office" },
-  { img: "rooms-image/playground.png", name: "playground" },
-  { img: "rooms-image/principalsoffice.png", name: "principal's office" },
-  { img: "rooms-image/restroom.png", name: "restroom" },
-  { img: "rooms-image/scienceroom.png", name: "science room" },
-  { img: "rooms-image/teachersoffice.png", name: "teacher's office" },
-  { img: "rooms-image/homeecroom.png", name: "home economics room" },
-  { img: "rooms-image/englishroom.png", name: "english room" },
-  { img: "rooms-image/broadcastroom.png", name: "broadcasting room" }
+  { img: "../school-image/aandc.png", name: "art room" },
+  { img: "../school-image/classroom1.png", name: "classroom" },
+  { img: "../school-image/cookingroom.png", name: "cooking room" },
+  { img: "../school-image/entrance.png", name: "entrance" },
+  { img: "../school-image/gym.png", name: "gym" },
+  { img: "../school-image/library.png", name: "library" },
+  { img: "../school-image/lunchroom.png", name: "lunch room" },
+  { img: "../school-image/musicroom.png", name: "music room" },
+  { img: "../school-image/nursesoffice.png", name: "nurse's office" },
+  { img: "../school-image/playground.png", name: "playground" },
+  { img: "../school-image/principalsoffice.png", name: "principal's office" },
+  { img: "../school-image/restroom.png", name: "restroom" },
+  { img: "../school-image/scienceroom.png", name: "science room" },
+  { img: "../school-image/teachersoffice.png", name: "teacher's office" },
+  { img: "../school-image/homeecroom.png", name: "home economics room" },
+  { img: "../school-image/englishroom.png", name: "English room" },
+  { img: "../school-image/broadcastroom.png", name: "broadcasting room" }
 ];
 
 /* ===== TOKEN SELECTION ===== */
@@ -159,4 +159,5 @@ function shuffle(arr){
 document.addEventListener('contextmenu', function(e) {
   e.preventDefault();
 });
+
 
