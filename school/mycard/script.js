@@ -93,7 +93,7 @@ function openOverlay(card) {
   selectedCard = card;
   centerCardsEl.classList.add("locked");
   overlayCard.src = card.src;
-  grammarText.textContent = `It's the ${card.dataset.name}.`;
+  grammarText.textContent = `I like the ${card.dataset.name}.`;
   overlay.classList.add("show");
 }
 
@@ -159,5 +159,6 @@ function shuffle(arr){
 document.addEventListener('contextmenu', function(e) {
   e.preventDefault();
 });
+
 
 
