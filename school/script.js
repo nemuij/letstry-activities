@@ -80,7 +80,7 @@ function showOverlay(isGoal = false) {
 
   overlayPlayer.textContent = playerToken;
   overlayRoom.textContent = room.name;
-  overlaySentence.textContent = isGoal ? "" : `I like the ${room.name}.`;
+  overlaySentence.textContent = isGoal ? "" : `It's the ${room.name}.`;
 
   if (room.image) {
     overlayImage.style.animation = "none";
@@ -178,4 +178,5 @@ function resetGame() {
 
 /* ===== INIT ===== */
 renderToken();
+
 
