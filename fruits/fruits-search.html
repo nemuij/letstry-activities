@@ -1,40 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>FRUIT WORD SEARCH</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>FRUIT WORD SEARCH</title>
+
+<!-- Comic Neue Bold -->
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
+<style>
+/* ================= GLOBAL ================= */
+body {
+  font-family: "Comic Neue", cursive;
+  background: #fff7ec;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 10px 0 20px;
+}
+
+/* ================= LAYOUT ================= */
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+/* ================= GRID ================= */
+#grid {
+  display: grid;
+  gap: 6px;
+}
+
+.cell {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+  font-weight: 700;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cell.selected { background: #cce5ff; }
+.cell.found { background: #9be7b2; }
+
+/* ================= SIDE PANEL ================= */
+.side-panel {
+  width: 260px;
+}
+
+.word-panel h3 {
+  margin-bottom: 10px;
+}
+
+.word-panel ul {
+  padding: 0;
+  margin: 0;
+}
+
+.word-panel li {
+  list-style: none;
+  font-size: 24px;
+  margin: 8px 0;
+}
+
+.word-panel li.found {
+  text-decoration: line-through;
+  color: gray;
+}
+
+/* ================= CONTROLS ================= */
+.controls {
+  margin-top: 20px;
+}
+
+#timer {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+/* timer pulse */
+.pulse {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ================= OVERLAY ================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.overlay-content {
+  background: white;
+  padding: 40px 50px;
+  border-radius: 16px;
+}
+
+.overlay-content h2 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+#finalTime {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ================= RAINBOW ================= */
+@keyframes rainbowFlash {
+  0%   { background: #ff6b6b; }
+  25%  { background: #ffd93d; }
+  50%  { background: #6bcfff; }
+  75%  { background: #c77dff; }
+  100% { background: #9be7b2; }
+}
+
+.cell.rainbow {
+  animation: rainbowFlash 0.8s ease-in-out;
+}
+
+/* ================= CONFETTI ================= */
+.confetti {
+  position: fixed;
+  top: -10px;
+  width: 8px;
+  height: 14px;
+  background: hsl(var(--h), 80%, 60%);
+  animation: fall 2s linear;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(360deg);
+  }
+}
+</style>
 </head>
 
 <body>
 
 <h1>🍓 FRUIT WORD SEARCH 🍍</h1>
 
-<div class="top-bar">
-  <div id="timer">TIME: 0S</div>
-  <button id="resetBtn">RESET</button>
-</div>
-
 <div class="container">
   <div id="grid"></div>
 
-  <div class="word-panel">
-    <h3>FIND THE FRUITS:</h3>
-    <ul id="wordList"></ul>
+  <div class="side-panel">
+    <div class="word-panel">
+      <h3>Find the fruits</h3>
+      <ul id="wordList"></ul>
+    </div>
+
+    <div class="controls">
+      <div id="timer">TIME: READY</div>
+      <button id="resetBtn">RESET</button>
+    </div>
   </div>
 </div>
 
-<!-- ALL CLEAR OVERLAY -->
 <div id="allClearScreen" class="overlay hidden">
   <div class="overlay-content">
     <h2>🎉 ALL CLEAR! 🎉</h2>
-    <p id="finalTime"></p>
+    <div id="finalTime"></div>
     <button onclick="startGame()">PLAY AGAIN</button>
-    <button onclick="closeOverlay()">CLOSE</button>
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+/* ================= SETTINGS ================= */
+const ROWS = 9;
+const COLS = 16;
+
+/* ================= FRUITS ================= */
+const fruitPool = [
+  { word: "APPLE", emoji: "🍎" },
+  { word: "BANANA", emoji: "🍌" },
+  { word: "PEACH", emoji: "🍑" },
+  { word: "STRAWBERRY", emoji: "🍓" },
+  { word: "KIWIFRUIT", emoji: "🥝" },
+  { word: "MELON", emoji: "🍈" },
+  { word: "GRAPE", emoji: "🍇" },
+  { word: "LEMON", emoji: "🍋" },
+  { word: "ORANGE", emoji: "🍊" },
+  { word: "PINEAPPLE", emoji: "🍍" },
+  { word: "CHERRY", emoji: "🍒" }
+];
+
+let activeFruits = [];
+let grid = [];
+let selectedCells = [];
+let timer = 0;
+let interval = null;
+let timerStarted = false;
+
+/* ================= GAME ================= */
+function startGame() {
+  closeOverlay();
+  resetTimer();
+
+  activeFruits = shuffle([...fruitPool]).slice(0, 8);
+  grid = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
+
+  placeWords();
+  fillRandomLetters();
+  renderGrid();
+  renderWordList();
+}
+
+document.getElementById("resetBtn").onclick = startGame;
+
+/* ================= TIMER ================= */
+function resetTimer() {
+  clearInterval(interval);
+  timer = 0;
+  timerStarted = false;
+  const t = document.getElementById("timer");
+  t.textContent = "TIME: READY";
+  t.classList.remove("pulse");
+}
+
+function startTimer() {
+  if (timerStarted) return;
+  timerStarted = true;
+  document.getElementById("timer").classList.add("pulse");
+
+  interval = setInterval(() => {
+    timer++;
+    document.getElementById("timer").textContent = `TIME: ${timer}s`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(interval);
+  document.getElementById("timer").classList.remove("pulse");
+}
+
+/* ================= WORD PLACEMENT ================= */
+function placeWords() {
+  activeFruits.forEach(obj => {
+    let placed = false;
+
+    while (!placed) {
+      const across = Math.random() < 0.5;
+
+      if (across) {
+        const r = rand(ROWS);
+        const c = rand(COLS - obj.word.length + 1);
+        if (obj.word.split("").every((_, i) => grid[r][c+i] === "")) {
+          obj.word.split("").forEach((ch, i) => grid[r][c+i] = ch);
+          placed = true;
+        }
+      } else {
+        const r = rand(ROWS - obj.word.length + 1);
+        const c = rand(COLS);
+        if (obj.word.split("").every((_, i) => grid[r+i][c] === "")) {
+          obj.word.split("").forEach((ch, i) => grid[r+i][c] = ch);
+          placed = true;
+        }
+      }
+    }
+  });
+}
+
+function fillRandomLetters() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  grid.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (!cell) grid[r][c] = letters[rand(letters.length)];
+    })
+  );
+}
+
+/* ================= RENDER ================= */
+function renderGrid() {
+  const gridEl = document.getElementById("grid");
+  gridEl.innerHTML = "";
+  gridEl.style.gridTemplateColumns = `repeat(${COLS}, 56px)`;
+
+  grid.flat().forEach(letter => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.textContent = letter;
+    cell.onclick = () => handleTap(cell);
+    gridEl.appendChild(cell);
+  });
+}
+
+function renderWordList() {
+  const ul = document.getElementById("wordList");
+  ul.innerHTML = "";
+  activeFruits.forEach(f => {
+    const li = document.createElement("li");
+    li.id = `word-${f.word}`;
+    li.textContent = `${f.emoji} ${f.word}`;
+    ul.appendChild(li);
+  });
+}
+
+/* ================= TAP ================= */
+function handleTap(cell) {
+  if (cell.classList.contains("found")) return;
+  startTimer();
+
+  if (cell.classList.contains("selected")) {
+    cell.classList.remove("selected");
+    selectedCells = selectedCells.filter(c => c !== cell);
+    return;
+  }
+
+  cell.classList.add("selected");
+  selectedCells.push(cell);
+  checkSelection();
+}
+
+function checkSelection() {
+  const text = selectedCells.map(c => c.textContent).join("");
+  const reverse = text.split("").reverse().join("");
+
+  const match = activeFruits.find(f => f.word === text || f.word === reverse);
+
+  if (match) {
+    selectedCells.forEach(c => {
+      c.classList.remove("selected");
+      c.classList.add("found");
+    });
+    document.getElementById(`word-${match.word}`).classList.add("found");
+    selectedCells = [];
+    checkAllClear();
+  }
+}
+
+/* ================= FINISH ================= */
+function checkAllClear() {
+  if (activeFruits.every(f =>
+    document.getElementById(`word-${f.word}`).classList.contains("found")
+  )) {
+    stopTimer();
+    launchConfetti();
+    rainbowFoundLetters();
+    document.getElementById("finalTime").textContent = `⏱ ${timer} seconds`;
+    document.getElementById("allClearScreen").classList.remove("hidden");
+  }
+}
+
+function closeOverlay() {
+  document.getElementById("allClearScreen").classList.add("hidden");
+}
+
+/* ================= EFFECTS ================= */
+function rainbowFoundLetters() {
+  document.querySelectorAll(".cell.found").forEach((cell, i) =>
+    setTimeout(() => cell.classList.add("rainbow"), i * 25)
+  );
+}
+
+function launchConfetti() {
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.setProperty("--h", Math.random() * 360);
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2000);
+  }
+}
+
+/* ================= UTIL ================= */
+function rand(n) { return Math.floor(Math.random() * n); }
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = rand(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ================= INIT ================= */
+startGame();
+</script>
+
 </body>
 </html>
-
