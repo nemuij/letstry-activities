@@ -2,327 +2,362 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Fruit Word Search</title>
+<title>FRUIT WORD SEARCH</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
 
 <style>
-  body {
-    font-family: Comic Neue, Arial, sans-serif;
-    background: #f5f7fb;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-  }
+body {
+  font-family: "Comic Neue", cursive;
+  background: #fff7ec;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0;
+}
 
-  h1 {
-    margin-bottom: 10px;
-  }
+h1 { margin: 10px 0 20px; }
 
-  .container {
-    display: flex;
-    justify-content: center;
-    gap: 16px; /* tightened */
-    align-items: flex-start;
-  }
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  align-items: flex-start;
+}
 
-  .grid {
-    display: grid;
-    gap: 4px;
-    background: #333;
-    padding: 6px;
-    border-radius: 10px;
-  }
+/* GRID */
+#grid {
+  display: grid;
+  gap: 6px;
+}
 
-  .cell {
-    width: 56px;
-    height: 56px;
-    background: white;
-    font-size: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-    border-radius: 6px;
-  }
+.cell {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+  font-weight: 700;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
 
-  .cell.selected {
-    background: #cde9ff;
-  }
+.cell.selected { background: #cce5ff; }
+.cell.found { background: #9be7b2; }
 
-  .cell.found {
-    background: #9cffb1;
-    animation: rainbow 1.5s linear infinite;
-  }
+/* SIDE */
+.side-panel { width: 260px; }
 
-  @keyframes rainbow {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
-  }
+.word-panel h3 { margin-bottom: 10px; }
 
-  .side-panel {
-    width: 220px;
-    text-align: left;
-  }
+.word-panel ul {
+  padding: 0;
+  margin: 0;
+}
 
-  .words {
-    font-size: 20px;
-    margin-bottom: 20px;
-  }
+.word-panel li {
+  list-style: none;
+  font-size: 24px;
+  margin: 8px 0;
+}
 
-  .words div.found {
-    text-decoration: line-through;
-    color: green;
-  }
+.word-panel li.found {
+  text-decoration: line-through;
+  color: gray;
+}
 
-  .timer {
-    font-size: 26px;
-    margin-bottom: 12px;
-    animation: pulse 1s infinite alternate;
-  }
+/* CONTROLS */
+.controls { margin-top: 20px; }
 
-  @keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.08); }
-  }
+#timer {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
 
-  button {
-    font-size: 22px;
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-  }
+button {
+  font-family: inherit;
+  font-size: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
 
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-  }
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
 
-  .overlay-content {
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    font-size: 32px;
-  }
+.overlay-content {
+  background: white;
+  padding: 40px 50px;
+  border-radius: 16px;
+}
 
-  .confetti {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    background: red;
-    top: -10px;
-    animation: fall 3s linear forwards;
-  }
+.overlay-content h2 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
 
-  @keyframes fall {
-    to {
-      transform: translateY(110vh) rotate(360deg);
-    }
-  }
+#finalTime {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.hidden { display: none; }
+
+/* RAINBOW */
+@keyframes rainbowFlash {
+  0% { background: #ff6b6b; }
+  25% { background: #ffd93d; }
+  50% { background: #6bcfff; }
+  75% { background: #c77dff; }
+  100% { background: #9be7b2; }
+}
+
+.cell.rainbow {
+  animation: rainbowFlash 0.8s ease-in-out;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🍎 Fruit Word Search 🍌</h1>
+<h1>🍓 FRUIT WORD SEARCH 🍍</h1>
 
 <div class="container">
-  <div id="grid" class="grid"></div>
+  <div id="grid"></div>
 
   <div class="side-panel">
-    <div class="words" id="wordList"></div>
-    <div class="timer" id="timer">⏱️ 0.0s</div>
-    <button onclick="startGame()">🔁 Play Again</button>
+    <div class="word-panel">
+      <h3>Find the fruits</h3>
+      <ul id="wordList"></ul>
+    </div>
+
+    <div class="controls">
+      <div id="timer">TIME: READY</div>
+      <button id="resetBtn">RESET</button>
+    </div>
   </div>
 </div>
 
-<div class="overlay" id="overlay">
-  <div class="overlay-content" id="overlayText"></div>
+<div id="allClearScreen" class="overlay hidden">
+  <div class="overlay-content">
+    <h2>🎉 ALL CLEAR! 🎉</h2>
+    <div id="finalTime"></div>
+    <button onclick="startGame()">PLAY AGAIN</button>
+  </div>
 </div>
 
 <script>
 const ROWS = 9;
 const COLS = 16;
 
-const words = [
+const fruitPool = [
   { word: "APPLE", emoji: "🍎" },
   { word: "BANANA", emoji: "🍌" },
-  { word: "ORANGE", emoji: "🍊" },
-  { word: "GRAPE", emoji: "🍇" },
   { word: "PEACH", emoji: "🍑" },
+  { word: "STRAWBERRY", emoji: "🍓" },
+  { word: "KIWIFRUIT", emoji: "🥝" },
+  { word: "MELON", emoji: "🍈" },
+  { word: "GRAPE", emoji: "🍇" },
   { word: "LEMON", emoji: "🍋" },
-  { word: "CHERRY", emoji: "🍒" },
-  { word: "PEAR", emoji: "🍐" }
+  { word: "ORANGE", emoji: "🍊" },
+  { word: "PINEAPPLE", emoji: "🍍" },
+  { word: "CHERRY", emoji: "🍒" }
 ];
 
 let grid = [];
+let activeFruits = [];
 let selected = [];
-let foundWords = new Set();
 let direction = null;
-let startTime = null;
-let timerInterval = null;
-
-const gridEl = document.getElementById("grid");
-const wordListEl = document.getElementById("wordList");
-const timerEl = document.getElementById("timer");
-const overlay = document.getElementById("overlay");
-const overlayText = document.getElementById("overlayText");
-
-gridEl.style.gridTemplateColumns = `repeat(${COLS}, 56px)`;
+let timer = 0;
+let interval = null;
+let started = false;
 
 function startGame() {
-  clearInterval(timerInterval);
-  timerEl.textContent = "⏱️ 0.0s";
-  startTime = null;
-  foundWords.clear();
-  direction = null;
-  selected = [];
+  clearSelection();
+  stopTimer();
+  timer = 0;
+  started = false;
+  document.getElementById("timer").textContent = "TIME: READY";
+  document.getElementById("allClearScreen").classList.add("hidden");
 
-  overlay.style.display = "none";
   grid = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
 
-  placeWordsSafely();
-  fillGrid();
+  activeFruits = shuffle([...fruitPool])
+    .filter(f => !(f.word === "APPLE" && fruitPool.some(x => x.word === "PINEAPPLE")))
+    .slice(0, 8);
+
+  if (activeFruits.some(f => f.word === "APPLE"))
+    activeFruits = activeFruits.filter(f => f.word !== "PINEAPPLE");
+  if (activeFruits.some(f => f.word === "PINEAPPLE"))
+    activeFruits = activeFruits.filter(f => f.word !== "APPLE");
+
+  placeWords();
+  fillLetters();
   renderGrid();
-  renderWordList();
+  renderList();
 }
 
-function placeWordsSafely() {
-  for (let w of words) {
+function placeWords() {
+  activeFruits.forEach(f => {
     let placed = false;
-    let attempts = 0;
+    while (!placed) {
+      const horiz = Math.random() < 0.5;
+      const r = rand(ROWS - (horiz ? 0 : f.word.length - 1));
+      const c = rand(COLS - (horiz ? f.word.length - 1 : 0));
 
-    while (!placed && attempts < 200) {
-      attempts++;
-      const horizontal = Math.random() < 0.5;
-      const r = Math.floor(Math.random() * ROWS);
-      const c = Math.floor(Math.random() * COLS);
-
-      if (horizontal && c + w.word.length <= COLS) {
-        if (w.word.split("").every((_, i) => grid[r][c+i] === "")) {
-          w.word.split("").forEach((ch,i)=>grid[r][c+i]=ch);
-          placed = true;
-        }
-      }
-
-      if (!horizontal && r + w.word.length <= ROWS) {
-        if (w.word.split("").every((_, i) => grid[r+i][c] === "")) {
-          w.word.split("").forEach((ch,i)=>grid[r+i][c]=ch);
-          placed = true;
-        }
+      if (f.word.split("").every((ch, i) =>
+        grid[r + (horiz ? 0 : i)][c + (horiz ? i : 0)] === ""
+      )) {
+        f.word.split("").forEach((ch, i) =>
+          grid[r + (horiz ? 0 : i)][c + (horiz ? i : 0)] = ch
+        );
+        placed = true;
       }
     }
-
-    if (!placed) startGame();
-  }
-}
-
-function fillGrid() {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  for (let r=0;r<ROWS;r++)
-    for (let c=0;c<COLS;c++)
-      if (!grid[r][c])
-        grid[r][c] = letters[Math.floor(Math.random()*letters.length)];
-}
-
-function renderGrid() {
-  gridEl.innerHTML = "";
-  grid.forEach((row,r)=>{
-    row.forEach((ch,c)=>{
-      const d = document.createElement("div");
-      d.className = "cell";
-      d.textContent = ch;
-      d.onclick = () => selectCell(d,r,c);
-      gridEl.appendChild(d);
-    });
   });
 }
 
-function selectCell(el,r,c) {
-  if (!startTime) {
-    startTime = Date.now();
-    timerInterval = setInterval(()=>{
-      timerEl.textContent = `⏱️ ${((Date.now()-startTime)/1000).toFixed(1)}s`;
-    },100);
-  }
+function fillLetters() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  grid.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (!cell) grid[r][c] = letters[rand(letters.length)];
+    })
+  );
+}
 
-  if (selected.length === 0) {
-    selected.push({el,r,c});
-    el.classList.add("selected");
+function renderGrid() {
+  const el = document.getElementById("grid");
+  el.innerHTML = "";
+  el.style.gridTemplateColumns = `repeat(${COLS}, 56px)`;
+
+  grid.flat().forEach((l, i) => {
+    const d = document.createElement("div");
+    d.className = "cell";
+    d.textContent = l;
+    d.dataset.index = i;
+    d.onclick = e => selectCell(e.target);
+    el.appendChild(d);
+  });
+}
+
+function renderList() {
+  const ul = document.getElementById("wordList");
+  ul.innerHTML = "";
+  activeFruits.forEach(f => {
+    const li = document.createElement("li");
+    li.id = `word-${f.word}`;
+    li.textContent = `${f.emoji} ${f.word}`;
+    ul.appendChild(li);
+  });
+}
+
+function selectCell(cell) {
+  startTimer();
+
+  if (cell.classList.contains("found")) return;
+
+  if (!selected.length) {
+    selected.push(cell);
+    cell.classList.add("selected");
     return;
   }
 
-  if (!direction && selected.length === 1) {
-    const dr = r - selected[0].r;
-    const dc = c - selected[0].c;
-    if (dr === 0) direction = "H";
-    else if (dc === 0) direction = "V";
+  if (selected.includes(cell)) return;
+
+  const last = selected[selected.length - 1];
+  const diff = cell.dataset.index - last.dataset.index;
+
+  if (!direction) {
+    if (Math.abs(diff) === 1) direction = "h";
+    else if (Math.abs(diff) === COLS) direction = "v";
     else return;
   }
 
   if (
-    (direction === "H" && r !== selected[0].r) ||
-    (direction === "V" && c !== selected[0].c)
+    (direction === "h" && Math.abs(diff) !== 1) ||
+    (direction === "v" && Math.abs(diff) !== COLS)
   ) return;
 
-  selected.push({el,r,c});
-  el.classList.add("selected");
-
+  selected.push(cell);
+  cell.classList.add("selected");
   checkWord();
 }
 
 function checkWord() {
-  const str = selected.map(s=>s.el.textContent).join("");
-  for (let w of words) {
-    if (str === w.word && !foundWords.has(w.word)) {
-      foundWords.add(w.word);
-      selected.forEach(s=>{
-        s.el.classList.remove("selected");
-        s.el.classList.add("found");
-      });
-      direction = null;
-      selected = [];
-      renderWordList();
-      if (foundWords.size === words.length) finishGame();
-      return;
-    }
-  }
-}
+  const word = selected.map(c => c.textContent).join("");
+  const rev = [...word].reverse().join("");
 
-function renderWordList() {
-  wordListEl.innerHTML = "";
-  words.forEach(w=>{
-    const d = document.createElement("div");
-    d.textContent = `${w.emoji} ${w.word}`;
-    if (foundWords.has(w.word)) d.classList.add("found");
-    wordListEl.appendChild(d);
+  const match = activeFruits.find(f => f.word === word || f.word === rev);
+  if (!match) return;
+
+  selected.forEach(c => {
+    c.classList.remove("selected");
+    c.classList.add("found", "rainbow");
   });
+
+  document.getElementById(`word-${match.word}`).classList.add("found");
+  clearSelection();
+  checkFinish();
 }
 
-function finishGame() {
-  clearInterval(timerInterval);
-  overlay.style.display = "flex";
-  overlayText.textContent = `🎉 ALL CLEAR! ⏱️ ${timerEl.textContent.replace("⏱️ ","")}`;
-  launchConfetti();
+function clearSelection() {
+  selected.forEach(c => c.classList.remove("selected"));
+  selected = [];
+  direction = null;
 }
 
-function launchConfetti() {
-  for (let i=0;i<80;i++) {
-    const c = document.createElement("div");
-    c.className = "confetti";
-    c.style.left = Math.random()*100+"vw";
-    c.style.background = `hsl(${Math.random()*360},100%,50%)`;
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),3000);
+document.body.addEventListener("click", e => {
+  if (!e.target.classList.contains("cell")) clearSelection();
+});
+
+function checkFinish() {
+  if (activeFruits.every(f =>
+    document.getElementById(`word-${f.word}`).classList.contains("found")
+  )) {
+    stopTimer();
+    document.getElementById("finalTime").textContent = `⏱ ${timer} seconds`;
+    document.getElementById("allClearScreen").classList.remove("hidden");
   }
 }
 
+function startTimer() {
+  if (started) return;
+  started = true;
+  interval = setInterval(() => {
+    timer++;
+    document.getElementById("timer").textContent = `TIME: ${timer}s`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(interval);
+}
+
+function rand(n) { return Math.floor(Math.random() * n); }
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = rand(i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+document.getElementById("resetBtn").onclick = startGame;
 startGame();
 </script>
+
 </body>
 </html>
