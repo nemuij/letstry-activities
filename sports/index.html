@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPORTS WORD SEARCH</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  font-family: "Andika", sans-serif;
+  background: #1e7f3b;
+  text-align: center;
+  user-select: none;
+}
+
+/* TITLE */
+h1 {
+  margin: 14px 0 22px;
+  font-size: 42px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 4px 8px rgba(0,0,0,0.6);
+}
+
+/* LAYOUT */
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+/* GRID */
+#grid {
+  display: grid;
+  gap: 4px;         /* vertical gap */
+  column-gap: 8px;  /* horizontal gap */
+}
+
+.cell {
+  width: 52px;
+  height: 52px;
+  font-size: 30px;
+  background: white;
+  border-radius: 6px;
+  border: 3px solid white;
+  box-shadow: inset 0 0 0 2px #2f6f1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell.selected { background: #d9f99d; }
+.cell.found { background: #22c55e; color: #083344; }
+
+.cell.warning {
+  background: #fde047;
+  animation: shake 0.25s;
+}
+
+.cell.penalty {
+  background: #ef4444;
+  color: white;
+  animation: shake 0.35s;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+/* RAINBOW IDAHO */
+@keyframes rainbow {
+  0% { background-color: #ff0000; }
+  14% { background-color: #ff7f00; }
+  28% { background-color: #ffff00; }
+  42% { background-color: #00ff00; }
+  57% { background-color: #0000ff; }
+  71% { background-color: #4b0082; }
+  85% { background-color: #8f00ff; }
+  100% { background-color: #ff0000; }
+}
+
+.cell.idaho {
+  animation: rainbow 1s linear infinite;
+  color: white !important;
+}
+
+/* SIDE PANEL */
+.side-panel {
+  width: 240px;
+  text-align: left;
+}
+
+/* CASE TOGGLE */
+.case-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.toggle-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.25);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.toggle-option.active {
+  background: white;
+  color: #166534;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* WORD LIST */
+.word-panel {
+  border: 4px solid white;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.15);
+}
+
+.word-panel h3 {
+  margin-top: 0;
+  text-align: center;
+  color: white;
+}
+
+.word-panel ul {
+  padding: 0;
+  margin: 0;
+}
+
+.word-panel li {
+  list-style: none;
+  font-size: 22px;
+  margin: 8px 0;
+  color: white;
+}
+
+.word-panel li.found {
+  text-decoration: line-through;
+  color: #333;
+}
+
+.cell,
+.word-panel li {
+  text-transform: none;
+}
+
+/* CONTROLS */
+.controls {
+  margin-top: 18px;
+  text-align: center;
+}
+
+#timer {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: white;
+}
+
+button {
+  font-family: inherit;
+  font-size: 20px;
+  padding: 10px 22px;
+  cursor: pointer;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+}
+
+button:hover { background: #22c55e; }
+
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.overlay-content {
+  background: #f0fdf4;
+  padding: 40px 50px;
+  border-radius: 16px;
+}
+
+.overlay-content h2 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+#finalTime {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.hidden { display: none; }
+</style>
+</head>
+
+<body>
+
+<h1>⚽ SPORTS WORD SEARCH 🏀</h1>
+
+<div class="container">
+  <div id="grid"></div>
+
+  <div class="side-panel">
+
+    <div class="case-toggle">
+      <span class="toggle-option active" data-case="upper">🔠 ABC</span>
+      <span class="toggle-option" data-case="lower">🔡 abc</span>
+    </div>
+
+    <div class="word-panel">
+      <h3>Find the Sports</h3>
+      <ul id="wordList"></ul>
+    </div>
+
+    <div class="controls">
+      <div id="timer">TIME: READY</div>
+      <button id="resetBtn">⟳ RESET</button>
+    </div>
+  </div>
+</div>
+
+<div id="allClearScreen" class="overlay hidden">
+  <div class="overlay-content">
+    <h2>🎉 ALL CLEAR! 🎉</h2>
+    <div id="finalTime"></div>
+    <button id="playAgainBtn">PLAY AGAIN</button>
+    <button id="exitBtn">EXIT</button> <!-- EXIT button added -->
+  </div>
+</div>
+
+<script>
+const ROWS = 9;
+const COLS = 15;
+const WORD_COUNT = 6;
+
+const sportPool = [
+  { word: "SOCCER", emoji: "⚽" },
+  { word: "BASEBALL", emoji: "⚾" },
+  { word: "TENNIS", emoji: "🎾" },
+  { word: "BASKETBALL", emoji: "🏀" },
+  { word: "SWIMMING", emoji: "🏊" },
+  { word: "SKIING", emoji: "🎿" },
+  { word: "SKATING", emoji: "⛸️" },
+  { word: "RUGBY", emoji: "🏉" },
+  { word: "HOCKEY", emoji: "🏒" },
+  { word: "VOLLEYBALL", emoji: "🏐" },
+  { word: "BADMINTON", emoji: "🏸" },
+  { word: "JUDO", emoji: "🥋" },
+  { word: "TABLETENNIS", emoji: "🏓", label: "TABLE TENNIS" },
+  { word: "RUNNING", emoji: "🏃" }
+];
+
+let activeSports = [];
+let grid = [];
+let selectedCells = [];
+let dragging = false;
+let lockDirection = null;
+let startCell = null;
+let timer = 0;
+let interval = null;
+let useUppercase = true;
+
+/* TOGGLE LOCK */
+function setToggleLocked(locked) {
+  document.querySelectorAll(".toggle-option").forEach(opt => {
+    opt.style.pointerEvents = locked ? "none" : "auto";
+    opt.style.opacity = locked ? "0.45" : "1";
+  });
+}
+
+/* GAME */
+function startGame() { softReset(); }
+
+function resetTimer() {
+  clearInterval(interval);
+  interval = null;
+  timer = 0;
+  document.getElementById("timer").textContent = "TIME: READY";
+  setToggleLocked(false);
+}
+
+function startTimer() {
+  if (interval) return;
+  setToggleLocked(true);
+  interval = setInterval(() => {
+    timer++;
+    document.getElementById("timer").textContent = `TIME: ${timer}s`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(interval);
+  interval = null;
+}
+
+/* WORDS */
+function placeWords() {
+  activeSports.forEach(obj => {
+    let placed = false;
+    while (!placed) {
+      const across = Math.random() < 0.5;
+      if (across) {
+        const r = rand(ROWS);
+        const c = rand(COLS - obj.word.length + 1);
+        if (obj.word.split("").every((_, i) => !grid[r][c+i])) {
+          obj.word.split("").forEach((ch, i) => grid[r][c+i] = ch);
+          placed = true;
+        }
+      } else {
+        const r = rand(ROWS - obj.word.length + 1);
+        const c = rand(COLS);
+        if (obj.word.split("").every((_, i) => !grid[r+i][c])) {
+          obj.word.split("").forEach((ch, i) => grid[r+i][c] = ch);
+          placed = true;
+        }
+      }
+    }
+  });
+}
+
+/* IDAHO EASTER EGG */
+function placeIdaho() {
+  const word = "IDAHO";
+  let placed = false;
+  while (!placed) {
+    const across = Math.random() < 0.5;
+    if (across) {
+      const r = rand(ROWS);
+      const c = rand(COLS - word.length + 1);
+      if (word.split("").every((_, i) => !grid[r][c+i])) {
+        word.split("").forEach((ch, i) => grid[r][c+i] = ch);
+        placed = true;
+      }
+    } else {
+      const r = rand(ROWS - word.length + 1);
+      const c = rand(COLS);
+      if (word.split("").every((_, i) => !grid[r+i][c])) {
+        word.split("").forEach((ch, i) => grid[r+i][c] = ch);
+        placed = true;
+      }
+    }
+  }
+}
+
+function fillRandomLetters() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  grid.flat().forEach((_, i) => {
+    const r = Math.floor(i / COLS);
+    const c = i % COLS;
+    if (!grid[r][c]) grid[r][c] = letters[rand(letters.length)];
+  });
+}
+
+/* RENDER */
+function renderGrid() {
+  const gridEl = document.getElementById("grid");
+  gridEl.innerHTML = "";
+  gridEl.style.gridTemplateColumns = `repeat(${COLS}, 52px)`;
+
+  grid.flat().forEach((letter, index) => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.textContent = useUppercase ? letter : letter.toLowerCase();
+    cell.dataset.index = index;
+
+    cell.addEventListener("pointerdown", () => startDrag(cell));
+    cell.addEventListener("pointerenter", () => dragOver(cell));
+    cell.addEventListener("pointerup", endDrag);
+
+    gridEl.appendChild(cell);
+  });
+}
+
+function renderWordList() {
+  const ul = document.getElementById("wordList");
+  ul.innerHTML = "";
+  activeSports.forEach(s => {
+    const li = document.createElement("li");
+    li.id = `word-${s.word}`;
+    const name = s.label || s.word;
+    li.textContent = `${s.emoji} ${useUppercase ? name : name.toLowerCase()}`;
+    ul.appendChild(li);
+  });
+}
+
+/* DRAG */
+function startDrag(cell) {
+  startTimer();
+  dragging = true;
+  lockDirection = null;
+  startCell = cell;
+  clearSelection();
+  selectCell(cell);
+}
+
+function dragOver(cell) {
+  if (!dragging || cell.classList.contains("found")) return;
+
+  const start = Number(startCell.dataset.index);
+  const current = Number(cell.dataset.index);
+  const sr = Math.floor(start / COLS);
+  const sc = start % COLS;
+  const cr = Math.floor(current / COLS);
+  const cc = current % COLS;
+
+  if (!lockDirection) {
+    if (sr === cr) lockDirection = "row";
+    else if (sc === cc) lockDirection = "col";
+    else return;
+  }
+
+  if ((lockDirection === "row" && sr === cr) ||
+      (lockDirection === "col" && sc === cc)) {
+    selectCell(cell);
+  }
+}
+
+function endDrag() {
+  dragging = false;
+  checkSelection();
+}
+
+function selectCell(cell) {
+  if (!cell.classList.contains("selected")) {
+    cell.classList.add("selected");
+    selectedCells.push(cell);
+  }
+}
+
+function clearSelection() {
+  selectedCells.forEach(c =>
+    c.classList.remove("selected", "warning", "penalty")
+  );
+  selectedCells = [];
+}
+
+/* CHECK */
+function checkSelection() {
+  if (!selectedCells.length) return;
+
+  const text = selectedCells.map(c => c.textContent.toUpperCase()).join("");
+  const rev = text.split("").reverse().join("");
+
+  // Easter egg check
+  if (text === "IDAHO" || rev === "IDAHO") {
+    selectedCells.forEach(c => c.classList.add("idaho"));
+    setTimeout(() => {
+      selectedCells.forEach(c => c.classList.remove("idaho"));
+      clearSelection();
+    }, 2000);
+    return;
+  }
+
+  const exact = activeSports.find(s => s.word === text || s.word === rev);
+
+  if (exact) {
+    selectedCells.forEach(c => c.classList.add("found"));
+    document.getElementById(`word-${exact.word}`).classList.add("found");
+    clearSelection();
+    checkAllClear();
+    return;
+  }
+
+  const possible = activeSports.some(s =>
+    s.word.startsWith(text) || s.word.startsWith(rev)
+  );
+
+  if (possible) {
+    selectedCells.forEach(c => c.classList.add("warning"));
+    setTimeout(() => {
+      selectedCells.forEach(c => c.classList.remove("warning"));
+    }, 250);
+  } else {
+    selectedCells.forEach(c => c.classList.add("penalty"));
+    setTimeout(clearSelection, 400);
+  }
+}
+
+/* FINISH */
+function checkAllClear() {
+  if (activeSports.every(s =>
+    document.getElementById(`word-${s.word}`).classList.contains("found")
+  )) {
+    stopTimer();
+    document.getElementById("finalTime").textContent = `⏱ ${timer} seconds`;
+    document.getElementById("allClearScreen").classList.remove("hidden");
+  }
+}
+
+function closeOverlay() {
+  document.getElementById("allClearScreen").classList.add("hidden");
+}
+
+/* UTIL */
+function rand(n) { return Math.floor(Math.random() * n); }
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = rand(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* TOGGLE EVENTS */
+document.querySelectorAll(".toggle-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".toggle-option")
+      .forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    useUppercase = btn.dataset.case === "upper";
+    renderGrid();
+    renderWordList();
+  });
+});
+
+/* SOFT RESET */
+function softReset() {
+  stopTimer();
+  clearSelection();
+  closeOverlay();
+  resetTimer();
+  do {
+    activeSports = shuffle([...sportPool]).slice(0, WORD_COUNT);
+  } while (
+    activeSports.some(s => s.word === "TENNIS") &&
+    activeSports.some(s => s.word === "TABLETENNIS")
+  );
+  grid = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
+  placeWords();
+  placeIdaho();
+  fillRandomLetters();
+  renderGrid();
+  renderWordList();
+}
+
+/* BUTTONS */
+document.getElementById("resetBtn").onclick = softReset;
+document.getElementById("playAgainBtn").onclick = softReset;
+document.getElementById("exitBtn").onclick = () => { window.close(); };
+
+/* INIT */
+startGame();
+</script>
+
+</body>
+</html>
