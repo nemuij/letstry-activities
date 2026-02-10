@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Typing Game – Countries</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    font-family: "Andika", sans-serif;
+    background: #eef2f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .screen {
+    background: white;
+    width: 95%;
+    max-width: 900px;
+    height: 95vh;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .active { display: flex; }
+
+  .country-image {
+    width: 260px;
+    max-height: 30vh;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  #wordDisplay {
+    margin: 10px 0;
+  }
+
+  .letter {
+    font-size: 40px;
+    margin: 0 3px;
+  }
+
+  .correct { color: #2e7d32; }
+  .wrong { color: #d32f2f; text-decoration: underline; }
+
+  input {
+    font-size: 34px;
+    padding: 12px;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    border-radius: 14px;
+    border: 3px solid #333;
+    outline: none;
+    margin: 0 auto;
+  }
+
+  input.error {
+    border-color: #d32f2f;
+    background: #ffebee;
+  }
+
+  #info {
+    display: flex;
+    justify-content: space-around;
+    font-size: 26px;
+  }
+
+  /* --- Coin Progress --- */
+  #progress {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 6px;
+  }
+
+  .coin {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #cfcfcf;
+    box-shadow: inset -2px -2px 0 rgba(0,0,0,0.2);
+  }
+
+  .coin.current {
+    background: radial-gradient(circle at top left, #fff176, #fbc02d);
+    animation: shine 1.2s infinite;
+  }
+
+  .coin.done {
+    background: radial-gradient(circle at top left, #81c784, #2e7d32);
+  }
+
+  @keyframes shine {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  button {
+    font-size: 24px;
+    padding: 12px 30px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .primary { background: #2e7d32; color: white; }
+  .secondary { background: #444; color: white; }
+
+  /* --- ALL CLEAR --- */
+  #allClear {
+    font-size: 64px;
+    font-weight: bold;
+    color: #e53935;
+    text-shadow:
+      3px 3px 0 #fbc02d,
+      6px 6px 0 #1e88e5;
+    animation: bounce 1s infinite;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  #finalTime {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen active">
+  <img id="countryImage" class="country-image" />
+  <div id="wordDisplay"></div>
+  <input id="typingInput" autocomplete="off" />
+
+  <div id="progress"></div>
+
+  <div id="info">
+    <div id="timer">Time: 0s</div>
+  </div>
+
+  <button class="secondary" onclick="exitGame()">EXIT</button>
+</div>
+
+<!-- END SCREEN -->
+<div id="endScreen" class="screen">
+  <div id="allClear">🎉 ALL CLEAR! 🎉</div>
+  <div id="finalTime"></div>
+
+  <div>
+    <button class="primary" onclick="restartGame()">PLAY AGAIN</button>
+    <button class="secondary" onclick="exitGame()">EXIT</button>
+  </div>
+</div>
+
+<script>
+const WORDS_PER_ROUND = 8;
+
+const countries = [
+  "Argentina","Australia","Brazil","Canada","China","France","Germany","Greece",
+  "India","Ireland","Italy","Jamaica","Japan","Kenya","Mexico","Nepal","Norway",
+  "Philippines","Korea","Sweden","Taiwan","Thailand",
+  "UK","USA","Venezuela"
+].map(name => ({
+  name,
+  image: `countries-images/${name.replace(/ /g,"")}.png`
+}));
+
+let round = [];
+let index = 0;
+let seconds = 0;
+let timerStarted = false;
+let timerInterval;
+
+const gameScreen = document.getElementById("gameScreen");
+const endScreen = document.getElementById("endScreen");
+const imageEl = document.getElementById("countryImage");
+const wordDisplay = document.getElementById("wordDisplay");
+const input = document.getElementById("typingInput");
+const timerEl = document.getElementById("timer");
+const progressEl = document.getElementById("progress");
+const finalTimeEl = document.getElementById("finalTime");
+
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function startGame() {
+  round = shuffle([...countries]).slice(0, WORDS_PER_ROUND);
+  index = 0;
+  seconds = 0;
+  timerStarted = false;
+  clearInterval(timerInterval);
+  timerEl.textContent = "Time: 0s";
+  gameScreen.classList.add("active");
+  endScreen.classList.remove("active");
+  loadCountry();
+}
+
+function renderWord(word) {
+  wordDisplay.innerHTML = "";
+  [...word].forEach(letter => {
+    const span = document.createElement("span");
+    span.textContent = letter;
+    span.className = "letter";
+    wordDisplay.appendChild(span);
+  });
+}
+
+function renderProgress() {
+  progressEl.innerHTML = "";
+  for (let i = 0; i < WORDS_PER_ROUND; i++) {
+    const coin = document.createElement("div");
+    coin.className = "coin";
+    if (i < index) coin.classList.add("done");
+    else if (i === index) coin.classList.add("current");
+    progressEl.appendChild(coin);
+  }
+}
+
+function loadCountry() {
+  const c = round[index];
+  imageEl.src = c.image;
+  renderWord(c.name);
+  input.value = "";
+  input.classList.remove("error");
+  renderProgress();
+  input.focus();
+}
+
+input.addEventListener("input", () => {
+  if (!timerStarted && input.value.length > 0) {
+    timerStarted = true;
+    timerInterval = setInterval(() => {
+      seconds++;
+      timerEl.textContent = `Time: ${seconds}s`;
+    }, 1000);
+  }
+
+  const target = round[index].name;
+  const typed = input.value;
+  const letters = document.querySelectorAll(".letter");
+
+  if (
+    (typed.length === 1 && typed[0] !== typed[0].toUpperCase()) ||
+    (typed.length > 1 && typed.slice(1) !== typed.slice(1).toLowerCase())
+  ) input.classList.add("error");
+  else input.classList.remove("error");
+
+  letters.forEach((span, i) => {
+    if (!typed[i]) span.className = "letter";
+    else if (typed[i] === span.textContent) span.className = "letter correct";
+    else span.className = "letter wrong";
+  });
+
+  if (typed === target) {
+    index++;
+    if (index < round.length) loadCountry();
+    else finishGame();
+  }
+});
+
+function finishGame() {
+  clearInterval(timerInterval);
+  gameScreen.classList.remove("active");
+  endScreen.classList.add("active");
+  finalTimeEl.textContent = `Time: ${seconds} seconds`;
+}
+
+function restartGame() { startGame(); }
+function exitGame() { window.close(); }
+
+startGame();
+</script>
+
+</body>
+</html>
