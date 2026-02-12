@@ -295,14 +295,25 @@ let tokenStep = 1;
 
 /* ================= CARD DATA ================= */
 const cards = [
-  "art room","classroom","gym","library","lunch room","music room",
-  "nurse's office","playground","principal's office","restroom",
-  "science room","teacher's office","home economics room","English room",
-  "broadcasting room","entrance","cooking room","art & craft"
-].map((name,i)=>({
-  img:`../school-image/${i+1}.png`,
-  name
-}));
+  { img: "../school-image/aandc.png", name: "art room" },
+  { img: "../school-image/classroom1.png", name: "classroom" },
+  { img: "../school-image/cookingroom.png", name: "cooking room" },
+  { img: "../school-image/entrance.png", name: "entrance" },
+  { img: "../school-image/gym.png", name: "gym" },
+  { img: "../school-image/library.png", name: "library" },
+  { img: "../school-image/lunchroom.png", name: "lunch room" },
+  { img: "../school-image/musicroom.png", name: "music room" },
+  { img: "../school-image/nursesoffice.png", name: "nurse's office" },
+  { img: "../school-image/playground.png", name: "playground" },
+  { img: "../school-image/principalsoffice.png", name: "principal's office" },
+  { img: "../school-image/restroom.png", name: "restroom" },
+  { img: "../school-image/scienceroom.png", name: "science room" },
+  { img: "../school-image/teachersoffice.png", name: "teacher's office" },
+  { img: "../school-image/homeecroom.png", name: "home economics room" },
+  { img: "../school-image/englishroom.png", name: "English room" },
+  { img: "../school-image/broadcastroom.png", name: "broadcasting room" }
+];
+
 
 /* ================= TOKEN SELECTION ================= */
 tokenButtons.forEach(btn=>{
@@ -406,3 +417,4 @@ document.addEventListener("contextmenu",e=>e.preventDefault());
 
 </body>
 </html>
+
