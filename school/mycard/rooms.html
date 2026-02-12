@@ -263,23 +263,19 @@ const VERSION = "Goodv1";
 const tokenOverlay = document.getElementById("tokenOverlay");
 const tokenMessage = document.getElementById("tokenMessage");
 const tokenButtons = document.querySelectorAll(".tokens button");
-
 const game = document.getElementById("game");
 const centerCardsEl = document.getElementById("centerCards");
 const skipBtn = document.getElementById("skipBtn");
-
 const overlay = document.getElementById("overlay");
 const overlayCard = document.getElementById("overlayCard");
 const grammarText = document.getElementById("grammarText");
 const getBtn = document.getElementById("getBtn");
-
 const p1Name = document.getElementById("p1Name");
 const p2Name = document.getElementById("p2Name");
 const p1Cards = document.getElementById("player1Cards");
 const p2Cards = document.getElementById("player2Cards");
 const p1Count = document.getElementById("p1Count");
 const p2Count = document.getElementById("p2Count");
-
 const endScreen = document.getElementById("endScreen");
 const winnerText = document.getElementById("winnerText");
 const playAgainBtn = document.getElementById("playAgainBtn");
@@ -290,102 +286,120 @@ let currentPlayer = 1;
 let selectedCard = null;
 let locked = false;
 let tokenStep = 1;
+let skipStreak = 0;   // ✅ ADDED
 
 /* ================= CARD DATA ================= */
 const cards = [
-  { img: "../school-image/aandc.png", name: "art room" },
-  { img: "../school-image/classroom1.png", name: "classroom" },
-  { img: "../school-image/cookingroom.png", name: "cooking room" },
-  { img: "../school-image/entrance.png", name: "entrance" },
-  { img: "../school-image/gym.png", name: "gym" },
-  { img: "../school-image/library.png", name: "library" },
-  { img: "../school-image/lunchroom.png", name: "lunch room" },
-  { img: "../school-image/musicroom.png", name: "music room" },
-  { img: "../school-image/nursesoffice.png", name: "nurse's office" },
-  { img: "../school-image/playground.png", name: "playground" },
-  { img: "../school-image/principalsoffice.png", name: "principal's office" },
-  { img: "../school-image/restroom.png", name: "restroom" },
-  { img: "../school-image/scienceroom.png", name: "science room" },
-  { img: "../school-image/teachersoffice.png", name: "teacher's office" },
-  { img: "../school-image/homeecroom.png", name: "home economics room" },
-  { img: "../school-image/englishroom.png", name: "English room" },
-  { img: "../school-image/broadcastroom.png", name: "broadcasting room" }
+{ img: "../school-image/aandc.png", name: "art room" },
+{ img: "../school-image/classroom1.png", name: "classroom" },
+{ img: "../school-image/cookingroom.png", name: "cooking room" },
+{ img: "../school-image/entrance.png", name: "entrance" },
+{ img: "../school-image/gym.png", name: "gym" },
+{ img: "../school-image/library.png", name: "library" },
+{ img: "../school-image/lunchroom.png", name: "lunch room" },
+{ img: "../school-image/musicroom.png", name: "music room" },
+{ img: "../school-image/nursesoffice.png", name: "nurse's office" },
+{ img: "../school-image/playground.png", name: "playground" },
+{ img: "../school-image/principalsoffice.png", name: "principal's office" },
+{ img: "../school-image/restroom.png", name: "restroom" },
+{ img: "../school-image/scienceroom.png", name: "science room" },
+{ img: "../school-image/teachersoffice.png", name: "teacher's office" },
+{ img: "../school-image/homeecroom.png", name: "home economics room" },
+{ img: "../school-image/englishroom.png", name: "English room" },
+{ img: "../school-image/broadcastroom.png", name: "broadcasting room" }
 ];
-
 
 /* ================= TOKEN SELECTION ================= */
 tokenButtons.forEach(btn=>{
-  btn.onclick=()=>{
-    if(tokenStep===1){
-      p1Name.textContent=btn.dataset.token;
-      btn.disabled=true;
-      tokenMessage.textContent="Player 2, choose a token";
-      tokenStep=2;
-    } else if(tokenStep===2){
-      p2Name.textContent=btn.dataset.token;
-      tokenOverlay.classList.remove("show");
-      game.classList.remove("hidden");
-      startGame();
-      tokenStep=3;
-    }
-  };
+btn.onclick=()=>{
+if(tokenStep===1){
+p1Name.textContent=btn.dataset.token;
+btn.disabled=true;
+tokenMessage.textContent="Player 2, choose a token";
+tokenStep=2;
+}
+else if(tokenStep===2){
+p2Name.textContent=btn.dataset.token;
+tokenOverlay.classList.remove("show");
+game.classList.remove("hidden");
+startGame();
+tokenStep=3;
+}
+};
 });
 
 /* ================= GAME ================= */
 function startGame(){
-  shuffle(cards);
-  centerCardsEl.innerHTML="";
-  cards.forEach(card=>{
-    const img=document.createElement("img");
-    img.src=card.img;
-    img.className="card";
-    img.dataset.name=card.name;
-    img.onclick=()=>!locked && openOverlay(img);
-    centerCardsEl.appendChild(img);
-  });
-  updateTurnUI();
+shuffle(cards);
+centerCardsEl.innerHTML="";
+cards.forEach(card=>{
+const img=document.createElement("img");
+img.src=card.img;
+img.className="card";
+img.dataset.name=card.name;
+img.onclick=()=>!locked && openOverlay(img);
+centerCardsEl.appendChild(img);
+});
+updateTurnUI();
 }
 
 function openOverlay(card){
-  locked=true;
-  skipBtn.disabled=true;
-  selectedCard=card;
-  overlayCard.src=card.src;
-  grammarText.textContent=`I like the ${card.dataset.name}.`;
-  overlay.classList.add("show");
+locked=true;
+skipBtn.disabled=true;
+selectedCard=card;
+overlayCard.src=card.src;
+grammarText.textContent=`I like the ${card.dataset.name}.`;
+overlay.classList.add("show");
 }
 
 getBtn.onclick=()=>{
-  overlay.classList.remove("show");
-  const target=currentPlayer===1?p1Cards:p2Cards;
-  target.appendChild(selectedCard);
-  selectedCard=null;
-  locked=false;
-  skipBtn.disabled=false;
-  updateCounts();
+overlay.classList.remove("show");
 
-  if(centerCardsEl.children.length===0){
-    endGame();
-  } else {
-    currentPlayer=currentPlayer===1?2:1;
-    updateTurnUI();
-  }
+const target=currentPlayer===1?p1Cards:p2Cards;
+target.appendChild(selectedCard);
+
+selectedCard=null;
+locked=false;
+skipBtn.disabled=false;
+
+skipStreak = 0;   // ✅ RESET when a card is taken
+
+updateCounts();
+
+if(centerCardsEl.children.length===0){
+endGame();
+}
+else{
+currentPlayer=currentPlayer===1?2:1;
+updateTurnUI();
+}
 };
 
 /* ================= SKIP TURN ================= */
 skipBtn.onclick=()=>{
-  if(locked) return;
-  currentPlayer=currentPlayer===1?2:1;
-  updateTurnUI();
+if(locked) return;
+
+skipStreak++;   // ✅ INCREMENT
+
+if(skipStreak >= 2){
+endGame();
+return;
+}
+
+currentPlayer=currentPlayer===1?2:1;
+updateTurnUI();
 };
 
 /* ================= END GAME ================= */
 function endGame(){
-  winnerText.textContent =
-    p1Cards.children.length > p2Cards.children.length ? `${p1Name.textContent} wins!` :
-    p2Cards.children.length > p1Cards.children.length ? `${p2Name.textContent} wins!` :
-    "It's a tie!";
-  endScreen.classList.add("show");
+winnerText.textContent =
+p1Cards.children.length > p2Cards.children.length ?
+`${p1Name.textContent} wins!` :
+p2Cards.children.length > p1Cards.children.length ?
+`${p2Name.textContent} wins!` :
+"It's a tie!";
+
+endScreen.classList.add("show");
 }
 
 /* ================= BUTTONS ================= */
@@ -394,20 +408,20 @@ homeBtn.onclick=()=>window.location.href="https://redsrandomproject.my.canva.sit
 
 /* ================= HELPERS ================= */
 function updateTurnUI(){
-  document.getElementById("player1").classList.toggle("active",currentPlayer===1);
-  document.getElementById("player2").classList.toggle("active",currentPlayer===2);
+document.getElementById("player1").classList.toggle("active",currentPlayer===1);
+document.getElementById("player2").classList.toggle("active",currentPlayer===2);
 }
 
 function updateCounts(){
-  p1Count.textContent=p1Cards.children.length;
-  p2Count.textContent=p2Cards.children.length;
+p1Count.textContent=p1Cards.children.length;
+p2Count.textContent=p2Cards.children.length;
 }
 
 function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
+for(let i=arr.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1));
+[arr[i],arr[j]]=[arr[j],arr[i]];
+}
 }
 
 document.addEventListener("contextmenu",e=>e.preventDefault());
@@ -415,6 +429,7 @@ document.addEventListener("contextmenu",e=>e.preventDefault());
 
 </body>
 </html>
+
 
 
 
