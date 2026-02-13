@@ -17,19 +17,37 @@ body {
 
 h1 {
   font-size: 34px;
-  margin: 14px 0 6px; /* tightened */
+  margin: 14px 0 6px;
   color: #2E7D32;
 }
 
+#topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto 6px auto;
+  padding: 0 10px;
+  flex-wrap: wrap;
+}
+
 #controls {
-  margin-bottom: 6px; /* tightened */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#statsLine {
+  font-size: 18px;
+  color: #558B2F;
+  display: flex;
+  gap: 20px;
 }
 
 select, button {
   font-family: 'Andika', sans-serif;
   font-size: 18px;
-  padding: 8px 14px; /* slightly tighter */
-  margin: 4px;
+  padding: 8px 14px;
   border-radius: 10px;
   border: none;
 }
@@ -40,14 +58,26 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background: #57A05A;
-}
+button:hover { background: #57A05A; }
 
 #timer {
   font-size: 22px;
-  margin: 8px 0; /* tightened */
+  margin: 6px 0 2px;
   color: #33691E;
+}
+
+#newRecord {
+  font-size: 22px;
+  color: #FF6F00;
+  font-weight: bold;
+  display: none;
+  animation: pop 0.6s ease forwards;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
 }
 
 #slots, #cards {
@@ -55,7 +85,7 @@ button:hover {
   flex-wrap: wrap;
   justify-content: center;
   gap: 14px;
-  margin: 10px auto; /* reduced vertical margin */
+  margin: 10px auto;
   max-width: 1100px;
 }
 
@@ -70,7 +100,6 @@ button:hover {
   font-weight: bold;
 }
 
-/* Slots */
 .slot {
   border: 3px dashed #AED581;
   background: #FFFFFF;
@@ -81,29 +110,32 @@ button:hover {
   border: 3px solid #558B2F;
 }
 
+.slot.locked {
+  background: #E8F5E9;
+  border: 3px solid #A5D6A7;
+  color: #2E7D32;
+}
+
 .slot.wrong {
   background: #EF9A9A;
   border: 3px solid #C62828;
 }
 
-/* Cards */
 .card {
   background: #AED581;
   color: #1B5E20;
   box-shadow: 3px 3px 6px rgba(0,0,0,0.15);
   cursor: grab;
   touch-action: none;
-  transition: transform 0.25s ease; /* smooth snap */
+  transition: transform 0.25s ease;
 }
 
-.card.dragging {
-  opacity: 0.6;
-}
+.card.dragging { opacity: 0.6; }
 
 #celebration {
   position: fixed;
   inset: 0;
-  background: rgba(46, 125, 50, 0.9);
+  background: rgba(46,125,50,0.9);
   color: white;
   display: none;
   align-items: center;
@@ -116,29 +148,37 @@ button:hover {
   font-size: 20px;
   background: #81C784;
   color: #1B5E20;
+  margin: 20px;
 }
-</style>
 
+</style>
 </head>
 <body>
 
 <h1>Put the Alphabet in Order!</h1>
 
-<div id="controls">
-  <select id="levelSelect">
-    <option value="8">Level 🐣 – 8 Letters</option>
-    <option value="16">Level 🐥 – 16 Letters</option>
-    <option value="26">Level 🦅 – Full Alphabet</option>
-  </select>
-  <button onclick="shuffleCards()">Shuffle</button>
-  <button onclick="restartGame()">Restart</button>
+<div id="topBar">
+  <div id="controls">
+    <select id="levelSelect">
+      <option value="L0">🥚 Level 0 – 8 Missing</option>
+      <option value="L1">🐣 Level 1 – 16 Missing</option>
+      <option value="L2">🐥 Level 2 – Full Alphabet</option>
+      <option value="L3">🦅 Level 3 – 10 Random</option>
+    </select>
+    <button onclick="shuffleCards()">Shuffle</button>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
+  <div id="statsLine">
+    <span id="bestTime">Best Time: --</span>
+    <span id="playCount">Total Plays: 0</span>
+  </div>
 </div>
 
 <div id="timer">Time: 0s</div>
+<div id="newRecord">🏆 NEW RECORD!</div>
 
 <div id="slots"></div>
-
-<h2>Alphabet Cards</h2>
 <div id="cards"></div>
 
 <div id="celebration">
@@ -149,7 +189,6 @@ button:hover {
 </div>
 
 <script>
-// Disable right-click
 document.addEventListener("contextmenu", e => e.preventDefault());
 
 const fullAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -162,10 +201,24 @@ let timer = 0;
 let interval;
 let gameStarted = false;
 
-function getRandomLetters(count) {
-  const shuffled = [...fullAlphabet].sort(() => Math.random() - 0.5);
-  const selected = shuffled.slice(0, count);
-  return selected.sort(); // Keep correct alphabetical order for slots
+function updateStatsDisplay() {
+  const level = levelSelect.value;
+  const best = localStorage.getItem("bestTime_" + level);
+  const plays = localStorage.getItem("plays_" + level) || 0;
+
+  document.getElementById("bestTime").textContent =
+    best ? "Best Time: " + best + "s" : "Best Time: --";
+
+  document.getElementById("playCount").textContent =
+    "Total Plays: " + plays;
+}
+
+function incrementPlayCount() {
+  const level = levelSelect.value;
+  const key = "plays_" + level;
+  let plays = parseInt(localStorage.getItem(key) || 0);
+  plays++;
+  localStorage.setItem(key, plays);
 }
 
 function initGame() {
@@ -174,12 +227,64 @@ function initGame() {
   gameStarted = false;
   document.getElementById("timer").textContent = "Time: 0s";
   document.getElementById("celebration").style.display = "none";
+  document.getElementById("newRecord").style.display = "none";
 
-  const levelCount = parseInt(levelSelect.value);
-  currentAlphabet = getRandomLetters(levelCount);
+  incrementPlayCount();
+  updateStatsDisplay();
 
-  createSlots();
-  createCards();
+  const level = levelSelect.value;
+
+  if (level === "L0") setupMissingLettersMode(8);
+  else if (level === "L1") setupMissingLettersMode(16);
+  else if (level === "L2") {
+    currentAlphabet = getRandomLetters(26);
+    createSlots();
+    createCards();
+  }
+  else if (level === "L3") {
+    currentAlphabet = getRandomLetters(10);
+    createSlots();
+    createCards();
+  }
+}
+
+function setupMissingLettersMode(missingCount) {
+  slotsContainer.innerHTML = "";
+  cardsContainer.innerHTML = "";
+
+  const shuffled = [...fullAlphabet].sort(() => Math.random() - 0.5);
+  const missingLetters = shuffled.slice(0, missingCount);
+
+  fullAlphabet.forEach(letter => {
+    const slot = document.createElement("div");
+    slot.className = "slot";
+    slot.dataset.letter = letter;
+
+    if (!missingLetters.includes(letter)) {
+      slot.textContent = letter;
+      slot.classList.add("locked");
+    }
+
+    slotsContainer.appendChild(slot);
+  });
+
+  const shuffledMissing = [...missingLetters].sort(() => Math.random() - 0.5);
+
+  shuffledMissing.forEach(letter => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.textContent = letter;
+    card.dataset.letter = letter;
+    cardsContainer.appendChild(card);
+    enableDrag(card);
+  });
+
+  currentAlphabet = fullAlphabet;
+}
+
+function getRandomLetters(count) {
+  const shuffled = [...fullAlphabet].sort(() => Math.random() - 0.5);
+  return count === 26 ? [...fullAlphabet] : shuffled.slice(0, count).sort();
 }
 
 function createSlots() {
@@ -259,10 +364,19 @@ function checkDrop(card) {
     ) {
       if (!slot.textContent) {
         if (slot.dataset.letter === card.dataset.letter) {
-          slot.textContent = card.dataset.letter;
-          slot.classList.add("correct");
-          card.remove();
-          checkWin();
+
+          const deltaX = rect.left - cardRect.left;
+          const deltaY = rect.top - cardRect.top;
+
+          card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+          setTimeout(() => {
+            slot.textContent = card.dataset.letter;
+            slot.classList.add("correct");
+            card.remove();
+            checkWin();
+          }, 250);
+
         } else {
           slot.classList.add("wrong");
           setTimeout(() => slot.classList.remove("wrong"), 700);
@@ -280,6 +394,7 @@ function resetCard(card) {
   card.style.position = "static";
   card.style.left = "";
   card.style.top = "";
+  card.style.transform = "";
 }
 
 function startTimer() {
@@ -290,35 +405,46 @@ function startTimer() {
 }
 
 function checkWin() {
-  const allCorrect = [...document.querySelectorAll(".slot")]
-    .every(slot => slot.classList.contains("correct"));
+  const slots = document.querySelectorAll(".slot");
+  const allFilled = [...slots].every(slot =>
+    slot.textContent === slot.dataset.letter
+  );
 
-  if (allCorrect) {
+  if (allFilled) {
     clearInterval(interval);
+
+    const level = levelSelect.value;
+    const bestKey = "bestTime_" + level;
+    const previousBest = localStorage.getItem(bestKey);
+
+    let newRecord = false;
+
+    if (!previousBest || timer < previousBest) {
+      localStorage.setItem(bestKey, timer);
+      newRecord = true;
+    }
+
+    updateStatsDisplay();
+
+    if (newRecord) {
+      const badge = document.getElementById("newRecord");
+      badge.style.display = "block";
+      setTimeout(() => badge.style.display = "none", 3000);
+    }
+
     document.getElementById("celebration").style.display = "flex";
     document.getElementById("finalTime").textContent =
       "Finished in " + timer + " seconds!";
   }
 }
 
-function shuffleCards() {
-  createCards();
-}
-
-function restartGame() {
-  initGame();
-}
-
-function exitGame() {
-  window.open('', '_self');
-  window.close();
-}
+function shuffleCards() { createCards(); }
+function restartGame() { initGame(); }
+function exitGame() { window.open('', '_self'); window.close(); }
 
 levelSelect.addEventListener("change", initGame);
-
 initGame();
 </script>
 
 </body>
 </html>
-
