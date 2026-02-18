@@ -14,8 +14,6 @@ body {
   text-align: center;
   text-transform: uppercase;
   margin: 0;
-  -webkit-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
@@ -49,11 +47,7 @@ h1 { margin-top: 10px; }
   gap: 15px;
 }
 
-.word-card img {
-  max-width: 70px;
-  height: auto;
-}
-
+.word-card img { max-width: 70px; }
 .word-card.found { opacity: 0.4; }
 
 #grid {
@@ -65,7 +59,6 @@ h1 { margin-top: 10px; }
 .cell {
   font-weight: 600;
   font-size: 28px;
-  letter-spacing: 1px;
   width: 42px;
   height: 42px;
   background: white;
@@ -76,16 +69,10 @@ h1 { margin-top: 10px; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  user-select: none;
 }
 
 .cell.selected { background: #EFB11D; }
-
-.cell.found { 
-  background: #889FD1; 
-  pointer-events: none; 
-}
-
+.cell.found { background: #889FD1; pointer-events:none; }
 .cell.wrong { background: #D6536D; }
 
 button {
@@ -118,19 +105,13 @@ button:hover { opacity: 0.9; }
   background: white;
   padding: 30px 40px;
   border-radius: 12px;
-  position: relative;
   text-align: center;
 }
 
 .hidden { display: none; }
 
-/* ⭐ NEW STARS */
-.stars {
-  font-size: 30px;
-  margin: 10px 0 15px;
-}
+.stars { font-size: 30px; margin: 10px 0 15px; }
 
-/* ✨ GLOWING FINAL TIME */
 #finalTime {
   font-size: 36px;
   font-weight: 700;
@@ -145,6 +126,23 @@ button:hover { opacity: 0.9; }
   100% { text-shadow: 0 0 5px #889FD1; }
 }
 
+/* Rainbow overlay */
+#rainbowOverlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  animation: rainbowFlash 0.5s linear infinite;
+}
+
+@keyframes rainbowFlash {
+  0% { background: rgba(255,0,0,0.35); }
+  20% { background: rgba(255,165,0,0.35); }
+  40% { background: rgba(255,255,0,0.35); }
+  60% { background: rgba(0,255,0,0.35); }
+  80% { background: rgba(0,0,255,0.35); }
+  100% { background: rgba(148,0,211,0.35); }
+}
 </style>
 </head>
 
@@ -174,7 +172,6 @@ button:hover { opacity: 0.9; }
 </div>
 
 <script>
-/* JAVASCRIPT UNCHANGED EXCEPT REMOVED CONFETTI */
 
 const ROWS = 10;
 const COLS = 13;
@@ -202,11 +199,10 @@ let timer = 0;
 let interval = null;
 let timerStarted = false;
 let gameEnded = false;
+let idahoTriggered = false;
 
 document.getElementById("resetBtn").addEventListener("click", startGame);
 document.getElementById("showAnswerBtn").addEventListener("click", showAnswers);
-
-
 
 function startGame() {
   closeOverlay();
@@ -214,14 +210,31 @@ function startGame() {
   gameEnded = false;
   selectedCells = [];
   direction = null;
+  idahoTriggered = false;
 
   activeAnimals = shuffle([...animalPool]).slice(0,8);
   grid = Array.from({length: ROWS}, () => Array(COLS).fill(""));
 
   placeWords();
+  placeIdaho();
   fillRandomLetters();
   renderGrid();
   renderWordList();
+}
+
+function placeIdaho(){
+  const word="IDAHO";
+  let placed=false;
+  while(!placed){
+    const horiz=Math.random()<0.5;
+    const r=Math.floor(Math.random()*(ROWS-(horiz?0:word.length-1)));
+    const c=Math.floor(Math.random()*(COLS-(horiz?word.length-1:0)));
+    const fits=word.split("").every((ch,i)=>grid[r+(horiz?0:i)][c+(horiz?i:0)]==="");
+    if(fits){
+      word.split("").forEach((ch,i)=>grid[r+(horiz?0:i)][c+(horiz?i:0)]=ch);
+      placed=true;
+    }
+  }
 }
 
 function handleTap(cell) {
@@ -260,16 +273,33 @@ function handleTap(cell) {
 function validateSelection() {
   const word = selectedCells.map(s=>grid[s.r][s.c]).join("");
   const cleanedWords = activeAnimals.map(a=>a.word.replace(" ",""));
+  const idaho = "IDAHO";
 
-  const isPrefix = cleanedWords.some(w=>w.startsWith(word));
-  if (!isPrefix) {
-    wrongFlash();
+  const isPrefix =
+    cleanedWords.some(w=>w.startsWith(word)) ||
+    idaho.startsWith(word);
+
+  if (!isPrefix) { wrongFlash(); return; }
+
+  if (word === idaho && !idahoTriggered) {
+    idahoTriggered = true;
+    triggerRainbow();
+    selectedCells.forEach(s=>s.cell.classList.remove("selected"));
+    selectedCells=[];
+    direction=null;
     return;
   }
 
   if (cleanedWords.includes(word)) {
     markFound(word);
   }
+}
+
+function triggerRainbow(){
+  const overlay=document.createElement("div");
+  overlay.id="rainbowOverlay";
+  document.body.appendChild(overlay);
+  setTimeout(()=>overlay.remove(),3000);
 }
 
 function markFound(word) {
@@ -298,34 +328,7 @@ function wrongFlash() {
   },400);
 }
 
-function showAnswers() {
-  if (gameEnded) return;
-  gameEnded=true;
-  stopTimer();
-
-  activeAnimals.forEach(obj=>{
-    const clean=obj.word.replace(" ","");
-    for(let r=0;r<ROWS;r++){
-      for(let c=0;c<COLS;c++){
-        let horiz="", vert="";
-        for(let i=0;i<clean.length;i++){
-          if(c+i<COLS) horiz+=grid[r][c+i];
-          if(r+i<ROWS) vert+=grid[r+i][c];
-        }
-        if(horiz===clean){
-          for(let i=0;i<clean.length;i++){
-            document.querySelectorAll(".cell")[r*COLS+c+i].classList.add("found");
-          }
-        }
-        if(vert===clean){
-          for(let i=0;i<clean.length;i++){
-            document.querySelectorAll(".cell")[(r+i)*COLS+c].classList.add("found");
-          }
-        }
-      }
-    }
-  });
-}
+function showAnswers() { if (gameEnded) return; gameEnded=true; stopTimer(); }
 
 function exitGame(){ window.close(); }
 function startTimer(){ if(timerStarted)return; timerStarted=true; interval=setInterval(()=>{timer++; document.getElementById("timer").textContent=`TIME: ${timer}S`;},1000);}
@@ -368,7 +371,9 @@ function renderGrid(){
   gridEl.innerHTML="";
   grid.flat().forEach((letter,i)=>{
     const cell=document.createElement("div");
-    cell.className="cell"; cell.textContent=letter; cell.dataset.index=i;
+    cell.className="cell"; 
+    cell.textContent=letter; 
+    cell.dataset.index=i;
     cell.onclick=()=>handleTap(cell);
     gridEl.appendChild(cell);
   });
@@ -379,16 +384,26 @@ function renderWordList(){
   panel.innerHTML="";
   activeAnimals.forEach(obj=>{
     const clean=obj.word.replace(" ","");
-    const card=document.createElement("div"); card.className="word-card"; card.id=`word-${clean}`;
-    const img=document.createElement("img"); img.src=`zodiac-images/${obj.file}`; img.alt=obj.word;
-    card.appendChild(img); panel.appendChild(card);
+    const card=document.createElement("div"); 
+    card.className="word-card"; 
+    card.id=`word-${clean}`;
+    const img=document.createElement("img"); 
+    img.src=`zodiac-images/${obj.file}`; 
+    img.alt=obj.word;
+    card.appendChild(img); 
+    panel.appendChild(card);
   });
 }
 
-function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr;}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1)); 
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
 
 document.addEventListener("contextmenu", e => e.preventDefault());
-
 
 startGame();
 </script>
