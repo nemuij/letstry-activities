@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>VeggieStable1</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  background: #161B40;
+  font-family: 'Andika', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  color: #41B853;
+  margin-bottom: 10px;
+}
+
+#topBar {
+  width: 850px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#lives {
+  display: flex;
+  gap: 6px;
+}
+
+.heart {
+  font-size: 24px;
+  transition: opacity 0.3s ease;
+}
+
+.heart.lost {
+  opacity: 0.2;
+}
+
+#emojiBar {
+  display: flex;
+  gap: 10px;
+}
+
+.emoji {
+  font-size: 28px;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+button {
+  background: #F40058;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 25px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#game {
+  width: 850px;
+  height: 400px;
+  border: 6px solid #43BEE5;
+  background: #111;
+  position: relative;
+  overflow: hidden;
+}
+
+.word {
+  position: absolute;
+  font-size: 48px;
+  font-weight: bold;
+  color: #EFA500;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.word.visible {
+  opacity: 1;
+}
+
+.explosion {
+  position: absolute;
+  font-size: 60px;
+  animation: explode 0.5s ease-out forwards;
+}
+
+@keyframes explode {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+#typingInput {
+  width: 850px;
+  margin-top: 12px;
+  padding: 12px;
+  font-size: 22px;
+  border-radius: 25px;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-family: 'Andika', sans-serif;
+}
+
+#typingInput:disabled {
+  opacity: 0.5;
+}
+
+/* -------- Overlay -------- */
+
+#overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#overlay .skull {
+  font-size: 180px;       /* larger */
+  line-height: 1;
+  margin: 0 0 -1px 0;    /* tight spacing under skull */
+}
+
+#overlay h1 {
+  font-size: 70px;
+  margin: 0;
+  line-height: 1;
+}
+
+#stars {
+  font-size: 120px;
+  color: gold;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+/* -------- Countdown -------- */
+
+#countdownOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 180px;
+  font-weight: bold;
+  color: #F3F33B;
+  z-index: 5;
+}
+
+/* Perfect Clear animation */
+@keyframes perfectPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.perfect {
+  animation: perfectPulse 0.6s ease-in-out infinite;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+  <h1>Vegetable Invaders</h1>
+
+  <div id="topBar">
+    <div id="lives">
+      <span class="heart">❤️</span>
+      <span class="heart">❤️</span>
+      <span class="heart">❤️</span>
+    </div>
+
+    <div id="emojiBar"></div>
+
+    <button onclick="restartGame()">🔄 Restart</button>
+  </div>
+
+  <div id="game">
+    <div id="countdownOverlay">3</div>
+
+    <div id="overlay">
+      <div class="skull">💀</div>
+      <div id="stars"></div>
+      <h1 id="overlayText"></h1>
+
+      <div class="buttonRow">
+        <button onclick="restartGame()">▶️ Play Again</button>
+        <button onclick="exitGame()">🚪 Exit Game</button>
+      </div>
+    </div>
+  </div>
+
+  <input id="typingInput" type="text" autocomplete="off" placeholder="Type vegetable here..." />
+</div>
+
+<script>
+const wordBank = [
+  "carrot","broccoli","corn","potato",
+  "tomato","cucumber","green pepper",
+  "garlic","onion","peas"
+];
+
+const emojiMap = {
+  carrot:"🥕", broccoli:"🥦", corn:"🌽",
+  potato:"🥔", tomato:"🍅", cucumber:"🥒",
+  "green pepper":"🫑", garlic:"🧄",
+  onion:"🧅", peas:"🫛"
+};
+
+let selectedWords=[];
+let activeWords=[];
+let lives=3;
+let spawnIndex=0;
+let gameInterval;
+let gameActive=false;
+
+const game=document.getElementById("game");
+const overlay=document.getElementById("overlay");
+const overlayText=document.getElementById("overlayText");
+const starsDiv=document.getElementById("stars");
+const input=document.getElementById("typingInput");
+const countdownOverlay=document.getElementById("countdownOverlay");
+
+function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+
+function startCountdown(){
+  input.disabled=true;
+  let count=3;
+  countdownOverlay.style.display="flex";
+  countdownOverlay.textContent=count;
+
+  const timer=setInterval(()=>{
+    count--;
+    if(count>0){
+      countdownOverlay.textContent=count;
+    } else if(count===0){
+      countdownOverlay.textContent="GO!";
+    } else {
+      clearInterval(timer);
+      countdownOverlay.style.display="none";
+      startGame();
+    }
+  },700);
+}
+
+function startGame(){
+  selectedWords=shuffle([...wordBank]).slice(0,5);
+  activeWords=[];
+  spawnIndex=0;
+  lives=3;
+  gameActive=true;
+
+  clearInterval(gameInterval);
+  overlay.style.display="none";
+  starsDiv.classList.remove("perfect");
+  input.value="";
+  input.disabled=false;
+  input.focus();
+
+  document.querySelectorAll(".heart").forEach(h=>h.classList.remove("lost"));
+
+  const emojiBar=document.getElementById("emojiBar");
+  emojiBar.innerHTML="";
+  selectedWords.forEach(word=>{
+    const span=document.createElement("span");
+    span.className="emoji";
+    span.dataset.word=word;
+    span.textContent=emojiMap[word];
+    emojiBar.appendChild(span);
+  });
+
+  spawnWord();
+  gameInterval=setInterval(spawnWord,2000);
+}
+
+function spawnWord(){
+  if(!gameActive) return;
+  if(spawnIndex>=selectedWords.length){
+    clearInterval(gameInterval);
+    return;
+  }
+
+  const wordText=selectedWords[spawnIndex++];
+  const word=document.createElement("div");
+  word.className="word";
+  word.textContent=wordText;
+  word.style.top="0px";
+
+  game.appendChild(word);
+
+  const maxLeft = game.clientWidth - word.offsetWidth;
+  word.style.left = Math.random() * maxLeft + "px";
+
+  setTimeout(()=>word.classList.add("visible"),50);
+
+  activeWords.push(word);
+
+  word.fallInterval=setInterval(()=>{
+    if(!gameActive){
+      clearInterval(word.fallInterval);
+      return;
+    }
+
+    let top=parseFloat(word.style.top);
+
+    if(top>game.clientHeight-60){
+      clearInterval(word.fallInterval);
+      word.remove();
+      activeWords=activeWords.filter(w=>w!==word);
+      loseLife();
+      checkWinCondition();
+    } else {
+      word.style.top=top+2+"px";
+    }
+  },20);
+}
+
+function loseLife(){
+  if(!gameActive) return;
+
+  const hearts=document.querySelectorAll(".heart");
+  if(lives>0){
+    lives--;
+    hearts[lives].classList.add("lost");
+  }
+  if(lives===0) endGame(false);
+}
+
+function checkWinCondition(){
+  if(gameActive &&
+     spawnIndex>=selectedWords.length &&
+     activeWords.length===0){
+    endGame(true);
+  }
+}
+
+function brightenEmoji(word){
+  const emoji=document.querySelector(`[data-word="${word}"]`);
+  if(emoji) emoji.style.opacity="1";
+}
+
+function explode(x,y){
+  const boom=document.createElement("div");
+  boom.className="explosion";
+  boom.style.left=x+"px";
+  boom.style.top=y+"px";
+  boom.textContent="💥";
+  game.appendChild(boom);
+  setTimeout(()=>boom.remove(),500);
+}
+
+input.addEventListener("input",()=>{
+  if(!gameActive) return;
+
+  const typed=input.value.trim().toLowerCase();
+
+  activeWords.forEach((word,index)=>{
+    if(typed===word.textContent){
+      clearInterval(word.fallInterval);
+
+      const rect=word.getBoundingClientRect();
+      const gameRect=game.getBoundingClientRect();
+
+      explode(rect.left-gameRect.left, rect.top-gameRect.top);
+      brightenEmoji(word.textContent);
+
+      word.remove();
+      activeWords.splice(index,1);
+      input.value="";
+
+      checkWinCondition();
+    }
+  });
+});
+
+function endGame(win){
+  if(!gameActive) return;
+  gameActive=false;
+
+  clearInterval(gameInterval);
+
+  activeWords.forEach(w=>{
+    clearInterval(w.fallInterval);
+    w.remove();
+  });
+  activeWords=[];
+
+  input.disabled=true;
+
+  overlay.style.display="flex";
+  overlay.querySelector(".skull").style.display=win?"none":"block";
+
+  if(win){
+    starsDiv.textContent="⭐".repeat(lives);
+
+    if(lives===3){
+      overlayText.textContent="PERFECT!";
+      starsDiv.classList.add("perfect");
+    } else {
+      overlayText.textContent="CLEAR!";
+    }
+
+  } else {
+    overlayText.textContent="Game Over";
+    starsDiv.textContent="";
+  }
+}
+
+function restartGame(){
+  startCountdown();
+}
+
+function exitGame(){
+  window.close();
+}
+
+startCountdown();
+</script>
+
+</body>
+</html>
