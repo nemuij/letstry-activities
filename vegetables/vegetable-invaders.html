@@ -194,6 +194,23 @@ button {
 .perfect {
   animation: perfectPulse 0.6s ease-in-out infinite;
 }
+
+/* ===== Protection Layer ===== */
+
+/* Disable text selection globally */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow typing in the input box */
+#typingInput {
+  user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+}
+
 </style>
 </head>
 
@@ -449,6 +466,44 @@ function restartGame(){ startCountdown(); }
 function exitGame(){ window.close(); }
 
 startCountdown();
+
+/* ===== Protection Layer ===== */
+
+// Disable right click
+document.addEventListener("contextmenu", function(e){
+  e.preventDefault();
+});
+
+// Disable dragging
+document.addEventListener("dragstart", function(e){
+  e.preventDefault();
+});
+
+// Disable common DevTools & source shortcuts
+document.addEventListener("keydown", function(e){
+
+  // Block F12
+  if (e.key === "F12") {
+    e.preventDefault();
+  }
+
+  // Block Ctrl combinations
+  if (e.ctrlKey) {
+    const blocked = ["u","s","c","v","x","a","p"];
+    if (blocked.includes(e.key.toLowerCase())) {
+      e.preventDefault();
+    }
+  }
+
+  // Block Ctrl+Shift combinations
+  if (e.ctrlKey && e.shiftKey) {
+    const blockedShift = ["i","j","c"];
+    if (blockedShift.includes(e.key.toLowerCase())) {
+      e.preventDefault();
+    }
+  }
+});
+
 </script>
 </body>
 </html>
