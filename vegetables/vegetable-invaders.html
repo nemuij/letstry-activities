@@ -81,18 +81,32 @@ button {
   overflow: hidden;
 }
 
-.word {
+/* NEW: wrapper for emoji + word */
+.wordWrapper {
   position: absolute;
-  font-size: 48px;
-  font-weight: bold;
-  color: #EFA500;
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
 
-.word.visible {
+.wordWrapper.visible {
   opacity: 1;
+}
+
+/* controls the emoji dropdown size */
+
+.wordEmoji {
+  font-size: 60px;
+  margin-bottom: -10px;
+}
+
+.wordText {
+  font-size: 48px;
+  font-weight: bold;
+  color: #EFA500;
+  white-space: nowrap;
 }
 
 .explosion {
@@ -122,7 +136,7 @@ button {
   opacity: 0.5;
 }
 
-/* -------- Overlay -------- */
+/* Overlay, countdown, perfect animation unchanged */
 
 #overlay {
   position: absolute;
@@ -136,9 +150,9 @@ button {
 }
 
 #overlay .skull {
-  font-size: 180px;       /* larger */
+  font-size: 180px;
   line-height: 1;
-  margin: 0 0 -1px 0;    /* tight spacing under skull */
+  margin: 0 0 -1px 0;
 }
 
 #overlay h1 {
@@ -158,8 +172,6 @@ button {
   margin-top: 15px;
 }
 
-/* -------- Countdown -------- */
-
 #countdownOverlay {
   position: absolute;
   inset: 0;
@@ -173,7 +185,6 @@ button {
   z-index: 5;
 }
 
-/* Perfect Clear animation */
 @keyframes perfectPulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.2); }
@@ -187,60 +198,55 @@ button {
 </head>
 
 <body>
-
 <div id="container">
-  <h1>Veggie Invaders</h1>
+<h1>Vegetable Invaders</h1>
 
-  <div id="topBar">
-    <div id="lives">
-      <span class="heart">❤️</span>
-      <span class="heart">❤️</span>
-      <span class="heart">❤️</span>
-    </div>
+<div id="topBar">
+<div id="lives">
+<span class="heart">❤️</span>
+<span class="heart">❤️</span>
+<span class="heart">❤️</span>
+</div>
 
-    <div id="emojiBar"></div>
+<div id="emojiBar"></div>
+<button onclick="restartGame()">🔄 Restart</button>
+</div>
 
-    <button onclick="restartGame()">🔄 Restart</button>
-  </div>
+<div id="game">
+<div id="countdownOverlay">3</div>
 
-  <div id="game">
-    <div id="countdownOverlay">3</div>
+<div id="overlay">
+<div class="skull">💀</div>
+<div id="stars"></div>
+<h1 id="overlayText"></h1>
+<div class="buttonRow">
+<button onclick="restartGame()">▶️ Play Again</button>
+<button onclick="exitGame()">🚪 Exit Game</button>
+</div>
+</div>
+</div>
 
-    <div id="overlay">
-      <div class="skull">💀</div>
-      <div id="stars"></div>
-      <h1 id="overlayText"></h1>
-
-      <div class="buttonRow">
-        <button onclick="restartGame()">▶️ Play Again</button>
-        <button onclick="exitGame()">🚪 Exit Game</button>
-      </div>
-    </div>
-  </div>
-
-  <input id="typingInput" type="text" autocomplete="off" placeholder="Type vegetable here..." />
+<input id="typingInput" type="text" autocomplete="off" placeholder="Type vegetable here..." />
 </div>
 
 <script>
 const wordBank = [
-  "carrot","broccoli","corn","potato",
-  "tomato","cucumber","green pepper",
-  "garlic","onion","peas"
+"carrot","broccoli","corn","potato",
+"tomato","cucumber","green pepper",
+"garlic","onion","peas",
+"lettuce","eggplant","mushroom"
 ];
 
 const emojiMap = {
-  carrot:"🥕", broccoli:"🥦", corn:"🌽",
-  potato:"🥔", tomato:"🍅", cucumber:"🥒",
-  "green pepper":"🫑", garlic:"🧄",
-  onion:"🧅", peas:"🫛"
+carrot:"🥕", broccoli:"🥦", corn:"🌽",
+potato:"🥔", tomato:"🍅", cucumber:"🥒",
+"green pepper":"🫑", garlic:"🧄",
+onion:"🧅", peas:"🫛",
+lettuce:"🥬", eggplant:"🍆", mushroom:"🍄"
 };
 
-let selectedWords=[];
-let activeWords=[];
-let lives=3;
-let spawnIndex=0;
-let gameInterval;
-let gameActive=false;
+let selectedWords=[], activeWords=[], lives=3;
+let spawnIndex=0, gameInterval, gameActive=false;
 
 const game=document.getElementById("game");
 const overlay=document.getElementById("overlay");
@@ -252,199 +258,197 @@ const countdownOverlay=document.getElementById("countdownOverlay");
 function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 
 function startCountdown(){
-  input.disabled=true;
-  let count=3;
-  countdownOverlay.style.display="flex";
-  countdownOverlay.textContent=count;
+input.disabled=true;
+let count=3;
+countdownOverlay.style.display="flex";
+countdownOverlay.textContent=count;
 
-  const timer=setInterval(()=>{
-    count--;
-    if(count>0){
-      countdownOverlay.textContent=count;
-    } else if(count===0){
-      countdownOverlay.textContent="GO!";
-    } else {
-      clearInterval(timer);
-      countdownOverlay.style.display="none";
-      startGame();
-    }
-  },700);
+const timer=setInterval(()=>{
+count--;
+if(count>0) countdownOverlay.textContent=count;
+else if(count===0) countdownOverlay.textContent="GO!";
+else{
+clearInterval(timer);
+countdownOverlay.style.display="none";
+startGame();
+}
+},700);
 }
 
 function startGame(){
-  selectedWords=shuffle([...wordBank]).slice(0,5);
-  activeWords=[];
-  spawnIndex=0;
-  lives=3;
-  gameActive=true;
+selectedWords=shuffle([...wordBank]).slice(0,5);
+activeWords=[];
+spawnIndex=0;
+lives=3;
+gameActive=true;
 
-  clearInterval(gameInterval);
-  overlay.style.display="none";
-  starsDiv.classList.remove("perfect");
-  input.value="";
-  input.disabled=false;
-  input.focus();
+clearInterval(gameInterval);
+overlay.style.display="none";
+starsDiv.classList.remove("perfect");
+input.value="";
+input.disabled=false;
+input.focus();
 
-  document.querySelectorAll(".heart").forEach(h=>h.classList.remove("lost"));
+document.querySelectorAll(".heart").forEach(h=>h.classList.remove("lost"));
 
-  const emojiBar=document.getElementById("emojiBar");
-  emojiBar.innerHTML="";
-  selectedWords.forEach(word=>{
-    const span=document.createElement("span");
-    span.className="emoji";
-    span.dataset.word=word;
-    span.textContent=emojiMap[word];
-    emojiBar.appendChild(span);
-  });
+const emojiBar=document.getElementById("emojiBar");
+emojiBar.innerHTML="";
+selectedWords.forEach(word=>{
+const span=document.createElement("span");
+span.className="emoji";
+span.dataset.word=word;
+span.textContent=emojiMap[word];
+emojiBar.appendChild(span);
+});
 
-  spawnWord();
-  gameInterval=setInterval(spawnWord,2000);
+spawnWord();
+gameInterval=setInterval(spawnWord,3000);
 }
 
 function spawnWord(){
-  if(!gameActive) return;
-  if(spawnIndex>=selectedWords.length){
-    clearInterval(gameInterval);
-    return;
-  }
+if(!gameActive) return;
+if(spawnIndex>=selectedWords.length){
+clearInterval(gameInterval);
+return;
+}
 
-  const wordText=selectedWords[spawnIndex++];
-  const word=document.createElement("div");
-  word.className="word";
-  word.textContent=wordText;
-  word.style.top="0px";
+const wordText=selectedWords[spawnIndex++];
 
-  game.appendChild(word);
+const wrapper=document.createElement("div");
+wrapper.className="wordWrapper";
+wrapper.style.top="0px";
 
-  const maxLeft = game.clientWidth - word.offsetWidth;
-  word.style.left = Math.random() * maxLeft + "px";
+const emoji=document.createElement("div");
+emoji.className="wordEmoji";
+emoji.textContent=emojiMap[wordText];
 
-  setTimeout(()=>word.classList.add("visible"),50);
+const text=document.createElement("div");
+text.className="wordText";
+text.textContent=wordText;
 
-  activeWords.push(word);
+wrapper.appendChild(emoji);
+wrapper.appendChild(text);
+game.appendChild(wrapper);
 
-  word.fallInterval=setInterval(()=>{
-    if(!gameActive){
-      clearInterval(word.fallInterval);
-      return;
-    }
+const maxLeft=game.clientWidth-wrapper.offsetWidth;
+wrapper.style.left=Math.random()*maxLeft+"px";
 
-    let top=parseFloat(word.style.top);
+setTimeout(()=>wrapper.classList.add("visible"),50);
 
-    if(top>game.clientHeight-60){
-      clearInterval(word.fallInterval);
-      word.remove();
-      activeWords=activeWords.filter(w=>w!==word);
-      loseLife();
-      checkWinCondition();
-    } else {
-      word.style.top=top+2+"px";
-    }
-  },20);
+activeWords.push(wrapper);
+
+wrapper.fallInterval=setInterval(()=>{
+if(!gameActive){
+clearInterval(wrapper.fallInterval);
+return;
+}
+
+let top=parseFloat(wrapper.style.top);
+
+if(top>game.clientHeight-80){
+clearInterval(wrapper.fallInterval);
+wrapper.remove();
+activeWords=activeWords.filter(w=>w!==wrapper);
+loseLife();
+checkWinCondition();
+} else {
+wrapper.style.top=top+2+"px";
+}
+},40);
 }
 
 function loseLife(){
-  if(!gameActive) return;
-
-  const hearts=document.querySelectorAll(".heart");
-  if(lives>0){
-    lives--;
-    hearts[lives].classList.add("lost");
-  }
-  if(lives===0) endGame(false);
+if(!gameActive) return;
+const hearts=document.querySelectorAll(".heart");
+if(lives>0){
+lives--;
+hearts[lives].classList.add("lost");
+}
+if(lives===0) endGame(false);
 }
 
 function checkWinCondition(){
-  if(gameActive &&
-     spawnIndex>=selectedWords.length &&
-     activeWords.length===0){
-    endGame(true);
-  }
+if(gameActive && spawnIndex>=selectedWords.length && activeWords.length===0){
+endGame(true);
+}
 }
 
 function brightenEmoji(word){
-  const emoji=document.querySelector(`[data-word="${word}"]`);
-  if(emoji) emoji.style.opacity="1";
+const emoji=document.querySelector(`[data-word="${word}"]`);
+if(emoji) emoji.style.opacity="1";
 }
 
 function explode(x,y){
-  const boom=document.createElement("div");
-  boom.className="explosion";
-  boom.style.left=x+"px";
-  boom.style.top=y+"px";
-  boom.textContent="💥";
-  game.appendChild(boom);
-  setTimeout(()=>boom.remove(),500);
+const boom=document.createElement("div");
+boom.className="explosion";
+boom.style.left=x+"px";
+boom.style.top=y+"px";
+boom.textContent="💥";
+game.appendChild(boom);
+setTimeout(()=>boom.remove(),500);
 }
 
 input.addEventListener("input",()=>{
-  if(!gameActive) return;
+if(!gameActive) return;
 
-  const typed=input.value.trim().toLowerCase();
+const typed=input.value.trim().toLowerCase();
 
-  activeWords.forEach((word,index)=>{
-    if(typed===word.textContent){
-      clearInterval(word.fallInterval);
+activeWords.forEach((wrapper,index)=>{
+const word=wrapper.querySelector(".wordText").textContent;
 
-      const rect=word.getBoundingClientRect();
-      const gameRect=game.getBoundingClientRect();
+if(typed===word){
+clearInterval(wrapper.fallInterval);
 
-      explode(rect.left-gameRect.left, rect.top-gameRect.top);
-      brightenEmoji(word.textContent);
+const rect=wrapper.getBoundingClientRect();
+const gameRect=game.getBoundingClientRect();
 
-      word.remove();
-      activeWords.splice(index,1);
-      input.value="";
+explode(rect.left-gameRect.left, rect.top-gameRect.top);
+brightenEmoji(word);
 
-      checkWinCondition();
-    }
-  });
+wrapper.remove();
+activeWords.splice(index,1);
+input.value="";
+
+checkWinCondition();
+}
+});
 });
 
 function endGame(win){
-  if(!gameActive) return;
-  gameActive=false;
+if(!gameActive) return;
+gameActive=false;
 
-  clearInterval(gameInterval);
+clearInterval(gameInterval);
 
-  activeWords.forEach(w=>{
-    clearInterval(w.fallInterval);
-    w.remove();
-  });
-  activeWords=[];
+activeWords.forEach(w=>{
+clearInterval(w.fallInterval);
+w.remove();
+});
+activeWords=[];
 
-  input.disabled=true;
+input.disabled=true;
 
-  overlay.style.display="flex";
-  overlay.querySelector(".skull").style.display=win?"none":"block";
+overlay.style.display="flex";
+overlay.querySelector(".skull").style.display=win?"none":"block";
 
-  if(win){
-    starsDiv.textContent="⭐".repeat(lives);
-
-    if(lives===3){
-      overlayText.textContent="PERFECT!";
-      starsDiv.classList.add("perfect");
-    } else {
-      overlayText.textContent="CLEAR!";
-    }
-
-  } else {
-    overlayText.textContent="Game Over";
-    starsDiv.textContent="";
-  }
+if(win){
+starsDiv.textContent="⭐".repeat(lives);
+if(lives===3){
+overlayText.textContent="PERFECT!";
+starsDiv.classList.add("perfect");
+}else{
+overlayText.textContent="CLEAR!";
+}
+}else{
+overlayText.textContent="Game Over";
+starsDiv.textContent="";
+}
 }
 
-function restartGame(){
-  startCountdown();
-}
-
-function exitGame(){
-  window.close();
-}
+function restartGame(){ startCountdown(); }
+function exitGame(){ window.close(); }
 
 startCountdown();
 </script>
-
 </body>
 </html>
-
