@@ -352,7 +352,32 @@ document.getElementById("playAgainBtn").onclick=softReset;
 document.getElementById("exitBtn").onclick=()=>{window.close();};
 
 softReset();
+
+/* === Disable Right Click === */
+document.addEventListener("contextmenu", function (e) {
+  e.preventDefault();
+});
+
+/* === Disable Common DevTools Shortcuts === */
+document.addEventListener("keydown", function (e) {
+  // F12
+  if (e.key === "F12") {
+    e.preventDefault();
+  }
+
+  // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C
+  if (e.ctrlKey && e.shiftKey &&
+      (e.key === "I" || e.key === "J" || e.key === "C")) {
+    e.preventDefault();
+  }
+
+  // Ctrl+U (view source)
+  if (e.ctrlKey && e.key === "u") {
+    e.preventDefault();
+  }
+});
 </script>
 
 </body>
 </html>
+
